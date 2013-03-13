@@ -210,7 +210,14 @@ public class PageImage
         {
 //            bgImg = images.get(0).getBufferedImage();
             bgImg = images.get(images.size()-1).getBufferedImage();
-            imgColor = new AverageColor(bgImg);
+            if (bgImg == null)
+            {
+                imgColor = new AverageColor(Color.white, 1);
+            }
+            else
+            {
+                imgColor = new AverageColor(bgImg);
+            }
             if (imgColor.getColor() == null) return null;
             /* DOC: mixing color of bg image with bg
              * - more precise -> if the bg is small compared to the box, it won't be so visual distinct
