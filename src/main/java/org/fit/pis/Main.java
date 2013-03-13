@@ -27,9 +27,15 @@ public class Main
         InputStream is;
         URLConnection con;
         PageImage img;
+        String urlString;
+        String imageString;
         BrowserCanvas canvas;
 
-        url = new URL("http://www.idnes.cz");
+        if (args.length < 1) return;
+        urlString = args[0];
+        imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-");
+
+        url = new URL(urlString);
         con = url.openConnection();
         is = con.getInputStream();
         url = con.getURL(); /* Store this (possible redirect happened) */
@@ -48,7 +54,7 @@ public class Main
         canvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
         img = new PageImage(canvas);
         img.draw();
-        img.save("/home/greengo/idnes.png");
+        img.save("/home/greengo/"+imageString+".png");
 
         ArrayList<PageArea> areas;
         ArrayList<PageArea> leaves;
@@ -79,7 +85,7 @@ public class Main
             g.drawRect(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight());
         }
 
-        File outputfile = new File("/home/greengo/idnes-boxes.png");
+        File outputfile = new File("/home/greengo/"+imageString+"-boxes.png");
         try {
             ImageIO.write(boxImg, "png", outputfile);
         } catch (IOException e) {
