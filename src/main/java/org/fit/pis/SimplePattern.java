@@ -23,7 +23,8 @@ public class SimplePattern
      * - if alignment is vertical, this will be height similarity
      * - if alignment is horizontal, this will be width similarity
      */
-    private double shapeSimilarity;
+    private double meanSize;
+    private double sizeTolerance;
 
     public SimplePattern(ArrayList<PageArea> c)
     {
@@ -34,11 +35,11 @@ public class SimplePattern
 
     public void evaluate()
     {
-        int i, j;
+        int i;
         PageArea a, b;
-        double sum;
+        double sum, sizeSum;
+        int rSum, gSum, bSum;
         double tmpVal;
-        int cnt;
         int alignment;
 
         if (this.children.size() == 0) this.alignment = ALIGNMENT_NONE;
@@ -67,70 +68,58 @@ public class SimplePattern
             }
         }
 
-        /* DOC: shape similarity is always measured on the opposite
+        /* Color and size similarity is all that remains */
+        /* DOC: size is always measured on the opposite
          * direction to the alignment (horizontal vs. vertical) */
-        sum = cnt = 0;
-        if (this.alignment == ALIGNMENT_NONE) return;
-        else if (this.alignment == ALIGNMENT_TOP ||
-                 this.alignment == ALIGNMENT_BOTTOM)
-        {
-            for (i = 0; i < this.children.size(); i++)
-            {
-                a = this.children.get(i);
-                for (j = i+1; j < this.children.size(); j++)
-                {
-                    b = this.children.get(j);
-                    sum += this.getHeightRatio(a, b);
-                    cnt++;
-                }
-            }
-        }
-        else
-        {
-            for (i = 0; i < this.children.size(); i++)
-            {
-                a = this.children.get(i);
-                for (j = i+1; j < this.children.size(); j++)
-                {
-                    b = this.children.get(j);
-                    sum += this.getWidthRatio(a, b);
-                    cnt++;
-                }
-            }
-        }
-        this.shapeSimilarity = sum/cnt;
-
-        /* Color similarity is all that remains */
-        int rSum = 0, gSum = 0, bSum = 0;
+        sizeSum = rSum = gSum = bSum = 0;
         for (PageArea child: this.children)
         {
             rSum += child.getColor().getRed();
             gSum += child.getColor().getGreen();
             bSum += child.getColor().getBlue();
+            if (this.alignment == ALIGNMENT_TOP || this.alignment == ALIGNMENT_BOTTOM)
+            {
+                sizeSum += child.getHeight();
+            }
+            else
+            {
+                sizeSum += child.getWidth();
+            }
         }
         rSum /= this.children.size();
         gSum /= this.children.size();
         bSum /= this.children.size();
         this.meanColor = new Color(rSum, gSum, bSum);
+        this.meanSize = sizeSum/this.children.size();
 
-        sum = 0;
+        sum = sizeSum = 0;
         for (PageArea child: this.children)
         {
             tmpVal = PageArea.colorDiff(child.getColor(), this.meanColor);
             sum += tmpVal*tmpVal;
+            if (this.alignment == ALIGNMENT_TOP || this.alignment == ALIGNMENT_BOTTOM)
+            {
+                tmpVal = this.meanSize-child.getHeight();
+            }
+            else
+            {
+                tmpVal = this.meanSize-child.getWidth();
+            }
+            sizeSum += tmpVal*tmpVal;
         }
         sum /= this.children.size();
+        sizeSum /= this.children.size();
 
         this.colorTolerance = Math.sqrt(sum);
         if (this.colorTolerance == 0) this.colorTolerance = 5; /* Default value is 5% TODO: is this correct */
+        this.sizeTolerance = Math.sqrt(sizeSum);
     }
 
     public boolean match(PageArea a)
     {
         PageArea child;
-        double shapeSimilarity;
+        double sizeDiff;
         double colorDiff;
-//        double colorSimilarity;
 
         if (this.children.size() == 0) return true;
 
@@ -147,54 +136,26 @@ public class SimplePattern
             return false;
         }
 
-        /* Now the check for color and shape similarity */
+        /* Now the check for color and size similarity */
         colorDiff = PageArea.colorDiff(this.meanColor, a.getColor());
         if (colorDiff > this.colorTolerance) return false;
 
-        // TODO: fine-tune this (is really 5% shift in similarity the borderline)
-        shapeSimilarity = this.getShapeSimilarity(a);
-        if (Math.abs(this.shapeSimilarity - shapeSimilarity)/this.shapeSimilarity > 0.05) return false;
+        sizeDiff = this.getSizeDiff(a);
+        if (sizeDiff > this.sizeTolerance) return false;
 
         return true;
     }
 
-    private double getColorSimilarity(PageArea a)
+    private double getSizeDiff(PageArea a)
     {
-        double sum = 0;
-        int cnt = 0;
-
-        for (PageArea child: this.children)
-        {
-            sum += child.getColorSimilarity(a);
-            cnt++;
-        }
-
-        return sum/(cnt*100); /* we have to divide by 100 to match the 0-1 probability span */
-    }
-
-    private double getShapeSimilarity(PageArea a)
-    {
-        double sum = 0;
-        int cnt = 0;
-
         if (this.alignment == ALIGNMENT_TOP || this.alignment == ALIGNMENT_BOTTOM)
         {
-            for (PageArea child: this.children)
-            {
-                sum += this.getWidthRatio(child, a);
-                cnt++;
-            }
+            return Math.abs(this.meanSize-a.getHeight());
         }
         else
         {
-            for (PageArea child: this.children)
-            {
-                sum += this.getHeightRatio(child, a);
-                cnt++;
-            }
+            return Math.abs(this.meanSize-a.getWidth());
         }
-
-        return sum/cnt;
     }
 
     private int getAlignment(PageArea a, PageArea b)
