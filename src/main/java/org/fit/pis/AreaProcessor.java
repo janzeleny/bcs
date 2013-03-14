@@ -307,44 +307,32 @@ public class AreaProcessor
 
                 if (group.getSimilarityRecursive(candidate) < similarityThreshold)
                 {
-                    found = false;
-                    for (PageArea child: group.getChildren())
+                    /* We didn't find the area in children - add it to the list and also add it to the inspection list if necessary */
+                    tmpArea = group.tryAdd(candidate);
+
+                    AreaMatch match = new AreaMatch();
+                    this.groupTree.intersects(tmpArea.getRectangle(), match);
+                    overlap = (match.getIds().size() > 0);
+
+                    if (!overlap)
                     {
-                        if (child == candidate)
+                        /* We don't have to use this.addChildToGroup() because this group
+                         * is not yet in the list (will be added just after locateGroup() finishes) */
+                        found = false;
+                        group.addChild(candidate);
+                        for (PageArea in: inspectionList)
                         {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
-                    {
-                        /* We didn't find the area in children - add it to the list and also add it to the inspection list if necessary */
-                        tmpArea = group.tryAdd(candidate);
-
-                        AreaMatch match = new AreaMatch();
-                        this.groupTree.intersects(tmpArea.getRectangle(), match);
-                        overlap = (match.getIds().size() > 0);
-
-                        if (!overlap)
-                        {
-                            /* We don't have to use this.addChildToGroup() because this group
-                             * is not yet in the list (will be added just after locateGroup() finishes) */
-                            group.addChild(candidate);
-                            for (PageArea in: inspectionList)
+                            if (in == candidate)
                             {
-                                if (in == candidate)
-                                {
-                                    found = true;
-                                    break;
-                                }
+                                found = true;
+                                break;
                             }
                         }
-                        else
-                        {
-                            /* We want to avoid adding the node to inspection */
-                            found = true;
-                        }
+                    }
+                    else
+                    {
+                        /* We want to avoid adding the node to inspection */
+                        found = true;
                     }
 
                     if (!found)
