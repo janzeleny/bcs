@@ -291,7 +291,10 @@ public class AreaProcessor
 
                 if (candidate != null)
                 {
-                    candidates.add(candidate);
+                    if (candidate.getParent() == null)
+                    {
+                        candidates.add(candidate);
+                    }
                     relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
                     i--; // since we removed the relation, we need to scan the one that took its place
                 }
