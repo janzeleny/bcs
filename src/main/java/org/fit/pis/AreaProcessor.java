@@ -202,6 +202,7 @@ public class AreaProcessor
         boolean overlaps;
         AreaMatch match;
 
+        this.time.toggle();
         while (relations.size() > 0)
         {
             do {
@@ -238,9 +239,7 @@ public class AreaProcessor
             {
                 /* Now we have to add children completely */
                 this.groups.add(group);
-                this.time.toggle();
                 this.locateGroup(group, relations);
-                this.time.toggle();
                 match = new AreaMatch();
                 this.areaTree.intersects(group.getRectangle(), match);
                 for (Integer index: match.getIds())
@@ -252,6 +251,7 @@ public class AreaProcessor
                 this.groupTree.add(group.getRectangle(), this.groups.size()-1);
             }
         }
+        this.time.toggle();
         System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
     }
 
