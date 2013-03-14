@@ -177,69 +177,12 @@ public class AreaProcessor
     public ArrayList<PageArea> extractGroups(List<PageArea> areas) throws Exception
     {
         ArrayList<PageAreaRelation> relations;
-        ArrayList<PageArea> candidates = new ArrayList<PageArea>();
-//        ArrayList<Integer> deleteList = new ArrayList<Integer>();
-        PageArea bestCandidate;
-        double similarity;
-        double bestMatch;
-        boolean merged;
-//        int i;
 
         relations = this.getAreaGraph(areas);
         this.locateGroups(relations);
 
         this.ungrouped.clear();
-        for (PageArea area: areas)
-        {
-            if (area.getParent() == null)
-            {
-                candidates.add(area);
-            }
-        }
-
-        merged = true;
-        while (merged)
-        {
-            merged = false;
-//            deleteList.clear();
-//            i = 0;
-            for (PageArea area: candidates)
-            {
-                /* Look only for areas that are not yet in any other group */
-                if (area.getParent() != null) continue;
-
-                bestCandidate = null;
-                bestMatch = 100;
-
-                AreaMatch match = new AreaMatch();
-                this.groupTree.intersects(area.getRectangle(), match);
-                for (Integer index: match.getIds())
-                {
-                    PageArea group = this.groups.get(index);
-                    similarity = group.getSimilarityRecursive(area);
-                    if (similarity < bestMatch)
-                    {
-                        bestMatch = similarity;
-                        bestCandidate = group;
-                    }
-                }
-
-                if (bestCandidate != null)
-                {
-                    this.addChildToGroup(bestCandidate, area);
-//                    deleteList.add(0, i); /* The list must be sorted in descending order */
-                    merged = true; /* We will want to re-iterate once more to check for more extensions */
-                }
-//                i++;
-            }
-
-//            for (Integer index: deleteList)
-//            {
-//                candidates.remove((int)index);
-//            }
-        }
-
-        for (PageArea area: candidates)
+        for (PageArea area: this.areas)
         {
             /* Test this once more to be sure */
             if (area.getParent() == null)
@@ -257,17 +200,18 @@ public class AreaProcessor
         PageAreaRelation relation;
         PageArea group;
         boolean overlaps;
+        AreaMatch match;
 
         while (relations.size() > 0)
         {
-            relation = relations.get(0);
-            relations.remove(0);
-            a = relation.getA();
-            b = relation.getB();
-            if (a.getParent() != null || b.getParent() != null)
-            {
-                throw new Exception();
-            }
+            do {
+                relation = relations.get(0);
+                relations.remove(0);
+                a = relation.getA();
+                b = relation.getB();
+            } while (relations.size() > 0 && (a.getParent() != null || b.getParent() != null));
+
+            if (relations.size() == 0) break;
 
             if (a.getSimilarity(b) > similarityThreshold)
             {
@@ -278,7 +222,7 @@ public class AreaProcessor
             group.addChild(a);
             group.addChild(b);
 
-            AreaMatch match = new AreaMatch();
+            match = new AreaMatch();
             this.groupTree.intersects(group.getRectangle(), match);
             overlaps = (match.getIds().size() > 0);
 
@@ -297,6 +241,12 @@ public class AreaProcessor
                 this.time.toggle();
                 this.locateGroup(group, relations);
                 this.time.toggle();
+                match = new AreaMatch();
+                this.areaTree.intersects(group.getRectangle(), match);
+                for (Integer index: match.getIds())
+                {
+                    group.addChild(this.areas.get(index));
+                }
                 /* Note that this line has to be after locateGroup,
                  * as it is depending on dimensions computed in locateGroup */
                 this.groupTree.add(group.getRectangle(), this.groups.size()-1);
