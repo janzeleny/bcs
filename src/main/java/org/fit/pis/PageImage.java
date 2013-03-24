@@ -195,6 +195,7 @@ public class PageImage
         Color color;
         AverageColor imgColor;
         Rectangle rect;
+        int x, y;
 
         images = box.getBackgroundImages();
         if (images != null && images.size() > 0)
@@ -220,7 +221,9 @@ public class PageImage
             color = box.getBgcolor();
             if (color == null)
             { /* BG is transparent - detect current color on the image */
-                color = new Color(this.img.getRGB(rect.x, rect.y));
+                x = (rect.x >= 0)?rect.x:0;
+                y = (rect.y >= 0)?rect.y:0;
+                color = new Color(this.img.getRGB(x, y));
             }
 
             return imgColor.mixWithBackground(color);
