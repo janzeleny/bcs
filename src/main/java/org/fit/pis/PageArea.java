@@ -23,6 +23,10 @@ public class PageArea
 
     private Rectangle rectangle;
 
+    public static final int ALIGNMENT_NONE = 0;
+    public static final int ALIGNMENT_LINE = 1;
+    public static final int ALIGNMENT_COLUMN = 2;
+
     public PageArea(BufferedImage img, Color c, int l, int t)
     {
         this.color = c;
@@ -389,6 +393,11 @@ public class PageArea
         double mean, meanDiff, shift = 0;
         double sum;
 
+        if (position == 0.0)
+        {
+            return 0.0;
+        }
+
         /* DOC: size similarity has lower precedence than color and position similarity
          * - to project that fact, we need to shift the size similarity factor closer
          *   to the mean value */
@@ -467,24 +476,59 @@ public class PageArea
         right = Math.max(this.right, a.right);
         width = right-left;
 
-        int ll, lr, rr, rl;
 
-        ll = Math.abs(a.left-this.left);
-        lr = Math.abs(a.left-this.right);
-        rr = Math.abs(a.right-this.right);
-        rl = Math.abs(a.right-this.left);
-        horizontalDistance = Math.min(Math.min(ll, lr), Math.min(rl, rr));
+        if (this.getAlignment(a) == ALIGNMENT_COLUMN)
+        {
+            /* DOC: this is important - if one area is smaller and doesn't
+             * extend over larger's area left/right, it is considered to be
+             * horizontally aligned */
+            horizontalDistance = 0;
+        }
+        else
+        {
+            int ll, lr, rr, rl;
+            ll = Math.abs(a.left-this.left);
+            lr = Math.abs(a.left-this.right);
+            rr = Math.abs(a.right-this.right);
+            rl = Math.abs(a.right-this.left);
+            horizontalDistance = Math.min(Math.min(ll, lr), Math.min(rl, rr));
+            if (horizontalDistance > 0) horizontalDistance--; /* DOC: We want to get just the space between, subtract one border */
+        }
 
-        int tt, tb, bb, bt;
-        tt = Math.abs(a.top-this.top);
-        tb = Math.abs(a.top-this.bottom);
-        bb = Math.abs(a.bottom-this.bottom);
-        bt = Math.abs(a.bottom-this.top);
-        verticalDistance = Math.min(Math.min(tt, tb), Math.min(bt, bb));
+        if (this.getAlignment(a) == ALIGNMENT_LINE)
+        {
+            /* DOC: this is important - if one area is smaller and doesn't
+             * extend over larger's area top/bottom, it is considered to be
+             * vertically aligned */
+            verticalDistance = 0;
+        }
+        else
+        {
+            int tt, tb, bb, bt;
+            tt = Math.abs(a.top-this.top);
+            tb = Math.abs(a.top-this.bottom);
+            bb = Math.abs(a.bottom-this.bottom);
+            bt = Math.abs(a.bottom-this.top);
+            verticalDistance = Math.min(Math.min(tt, tb), Math.min(bt, bb));
+            if (verticalDistance > 0) verticalDistance--; /* DOC: We want to get just the space between, subtract one border */
+        }
 
 
         /* DOC: this formula will be important to document */
-        return ((double)horizontalDistance/width+(double)verticalDistance/height)/2;
+        return Math.sqrt(verticalDistance*verticalDistance+horizontalDistance*horizontalDistance)/
+               Math.sqrt(width*width+height*height);
+    }
+
+    private int getAlignment(PageArea a)
+    {
+        if (this.bottom >= a.top && this.top <= a.bottom) return ALIGNMENT_LINE;
+        else if (this.right >= a.left && this.left <= a.right) return ALIGNMENT_COLUMN;
+        else if (a.getLeft() == this.getLeft()) return ALIGNMENT_COLUMN;
+        else if (a.getTop() == this.getTop()) return ALIGNMENT_LINE;
+        else if (a.getRight() == this.getRight()) return ALIGNMENT_COLUMN;
+        else if (a.getBottom() == this.getBottom()) return ALIGNMENT_LINE;
+
+        else return ALIGNMENT_NONE;
     }
 
     public static double colorDiff(Color a, Color b)
