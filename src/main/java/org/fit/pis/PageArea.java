@@ -1,7 +1,6 @@
 package org.fit.pis;
 
 import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,15 +26,15 @@ public class PageArea
     public static final int ALIGNMENT_LINE = 1;
     public static final int ALIGNMENT_COLUMN = 2;
 
-    public PageArea(BufferedImage img, Color c, int l, int t)
+    public PageArea(Color c, int l, int t, int r, int b)
     {
         this.color = c;
         this.left = l;
         this.top = t;
+        this.right = r;
+        this.bottom = b;
         this.children = null;
         this.rectangle = null;
-
-        discoverBoundaries(img);
     }
 
     public PageArea(PageArea a)
@@ -45,136 +44,6 @@ public class PageArea
         this.right = a.right;
         this.top = a.top;
         this.bottom = a.bottom;
-    }
-
-    private void discoverBoundaries(BufferedImage img)
-    {
-        this.startX = this.left;
-        this.startY = this.top;
-
-        if (this.goUp(img, this.left, this.top) == false)
-        { /* 1px vertical line */
-            if (this.goRight(img, this.left, this.top) == false)
-            {
-                this.right = this.left;
-                this.goDown(img, this.left, this.top);
-            }
-        }
-        return;
-    }
-
-    private boolean goRight(BufferedImage img, int startX, int y)
-    {
-        boolean ret = false;
-        int x = startX;
-        Color pixel;
-
-        if (x == img.getWidth()-1) return false;
-
-        pixel = new Color(img.getRGB(x+1, y));
-        while (pixel.equals(this.color))
-        {
-            if (this.goUp(img, x+1, y) == true)
-            {
-                if (x > this.right) this.right = x;
-                return true;
-            }
-            ret = true;
-            x++;
-            if (x == img.getWidth()-1) break;
-            pixel = new Color(img.getRGB(x+1, y));
-        }
-        if (x > this.right) this.right = x;
-        if (ret == false) return false;
-        else return this.goDown(img, x, y);
-    }
-
-    private boolean goLeft(BufferedImage img, int startX, int y)
-    {
-        boolean ret = false;
-        int x = startX;
-        Color pixel;
-
-        if (x == 0) return false;
-
-        pixel = new Color(img.getRGB(x-1, y));
-        while (pixel.equals(this.color))
-        {
-            if (this.goDown(img, x-1, y) == true)
-            {
-                if (x < this.left) this.left = x;
-                return true;
-            }
-            ret = true;
-            x--;
-            if (x == this.startX && y == this.startY)
-            {
-                if (x < this.left) this.left = x;
-                return true;
-            }
-            if (x == 0) break;
-            pixel = new Color(img.getRGB(x-1, y));
-        }
-        if (x < this.left) this.left = x;
-        if (ret == false) return false;
-        else return this.goUp(img, x, y);
-    }
-
-    private boolean goUp(BufferedImage img, int x, int startY)
-    {
-        boolean ret = false;
-        int y = startY;
-        Color pixel;
-
-        if (y == 0) return false;
-
-        pixel = new Color(img.getRGB(x, y-1));
-        while (pixel.equals(this.color))
-        {
-            if (this.goLeft(img, x, y-1) == true)
-            {
-                if (y < this.top) this.top = y;
-                return true;
-            }
-            ret = true;
-            y--;
-            if (x == this.startX && y == this.startY)
-            {
-                if (y < this.top) this.top = y;
-                return true;
-            }
-            if (y == 0) break;
-            pixel = new Color(img.getRGB(x, y-1));
-        }
-        if (y < this.top) this.top = y;
-        if (ret == false) return false;
-        else return this.goRight(img, x, y);
-    }
-
-    private boolean goDown(BufferedImage img, int x, int startY)
-    {
-        boolean ret = false;
-        int y = startY;
-        Color pixel;
-
-        if (y == img.getHeight()-1) return false;
-
-        pixel = new Color(img.getRGB(x, y+1));
-        while (pixel.equals(this.color))
-        {
-            if (this.goRight(img, x, y+1) == true)
-            {
-                if (y > this.bottom) this.bottom = y;
-                return true;
-            }
-            ret = true;
-            y++;
-            if (y == img.getHeight()-1) break;
-            pixel = new Color(img.getRGB(x, y+1));
-        }
-        if (y > this.bottom) this.bottom = y;
-        if (ret == false) return false;
-        else return this.goLeft(img, x, y);
     }
 
     public boolean containsPixel(int x, int y)

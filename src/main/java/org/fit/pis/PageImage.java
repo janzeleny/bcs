@@ -6,7 +6,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -230,120 +229,6 @@ public class PageImage
         }
 
         return box.getBgcolor();
-    }
-
-    public ArrayList<PageArea> getAreas()
-    {
-        int rowCounter = 0;
-        int colCounter;
-//        int []line;
-        Color pixel;
-        Color pixelBefore = null;
-        ArrayList<PageArea> areas = new ArrayList<PageArea>();
-        PageArea area;
-        PageArea openedArea;
-        boolean boundingBox;
-        double colorDiff;
-
-        List<PageArea> openAreas = new ArrayList<PageArea>();
-        List<PageArea> lineStack = new ArrayList<PageArea>();
-
-        while (rowCounter < img.getHeight())
-        {
-//            line = this.img.getRGB(0, rowCounter, img.getWidth(), 1, null, 0, 1);
-            colCounter = 0;
-            pixelBefore = null;
-            for (colCounter = 0; colCounter < img.getWidth(); colCounter++)
-            {
-                pixel = new Color(this.img.getRGB(colCounter, rowCounter));
-                if (rowCounter == 0 && colCounter == 0)
-                {
-                    area = new PageArea(this.img, pixel, colCounter, rowCounter);
-                    this.saveArea(area, areas, openAreas);
-                    lineStack.add(0, area);
-                }
-                else
-                {
-                    colorDiff = PageArea.colorDiff(pixel, pixelBefore);
-//                    if (colCounter == 0 || !pixel.equals(pixelBefore))
-                    if (colCounter == 0 || colorDiff > SIMILARITY_THRESHOLD)
-                    {
-                        boundingBox = false;
-                        area = new PageArea(this.img, pixel, colCounter, rowCounter);
-                        if (colCounter != 0)
-                        {
-                            for (PageArea a: lineStack)
-                            {
-                                if (area.getBottom() == a.getBottom()+1 &&
-                                    area.getTop() == a.getTop()-1 &&
-                                    area.getLeft() == a.getLeft()-1 &&
-                                    area.getRight() == a.getRight()+1)
-                                {
-                                    /* This is not a new area, just a bounding box caused by exiting the previous one */
-                                    boundingBox = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (lineStack.size() > 0)
-                        {
-                            lineStack.remove(0);
-                        }
-                        if (!boundingBox)
-                        {
-                            openedArea = this.getOpened(area, openAreas);
-                            if (openedArea == null)
-                            {
-                                this.saveArea(area, areas, openAreas);
-                                openedArea = area;
-                            }
-                            lineStack.add(0, openedArea);
-                        }
-                    }
-                }
-
-                /* Don't forget to detect what areas were discontinued by this line */
-                pixelBefore = pixel;
-            }
-
-            lineStack.clear();
-            rowCounter++;
-
-            while (openAreas.size() > 0 && openAreas.get(0).getBottom() < rowCounter)
-            {
-                openAreas.remove(0);
-            }
-        }
-
-        return areas;
-    }
-
-    private PageArea getOpened(PageArea area, List<PageArea> openAreas)
-    {
-        for (PageArea a: openAreas)
-        {
-            if (a.equals(area)) return a;
-        }
-
-        return null;
-    }
-
-    private void saveArea(PageArea area, List<PageArea> areas, List<PageArea> openAreas)
-    {
-        int i;
-
-        i = 0;
-        for (PageArea a: openAreas)
-        {
-            if (a.getBottom() > area.getBottom())
-            {
-                break;
-            }
-            i++;
-        }
-
-        openAreas.add(i, area);
-        areas.add(area);
     }
 
     public boolean save(String path)
