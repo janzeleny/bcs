@@ -102,13 +102,13 @@ public class Main
 
         drawImage(canvas, imageString);
 
-        AreaProcessor h;
+        AreaProcessor2 h;
         AreaCreator c;
 
         c = new AreaCreator(canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
         areas = c.getAreas(canvas.getRootBox());
 
-        h = new AreaProcessor(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
+        h = new AreaProcessor2(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
         groups = h.extractGroups(h.getAreas());
         ungrouped = h.getUngrouped();
 

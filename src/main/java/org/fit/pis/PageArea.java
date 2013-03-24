@@ -21,6 +21,8 @@ public class PageArea
     private ArrayList<PageArea> children;
 
     private Rectangle rectangle;
+    private int edgeCount;
+    private double meanDistance;
 
     public static final int ALIGNMENT_NONE = 0;
     public static final int ALIGNMENT_LINE = 1;
@@ -35,6 +37,8 @@ public class PageArea
         this.bottom = b;
         this.children = null;
         this.rectangle = null;
+        this.edgeCount = 0;
+        this.meanDistance = 0;
     }
 
     public PageArea(PageArea a)
@@ -44,6 +48,8 @@ public class PageArea
         this.right = a.right;
         this.top = a.top;
         this.bottom = a.bottom;
+        this.edgeCount = a.edgeCount;
+        this.meanDistance = a.meanDistance;
     }
 
     public boolean containsPixel(int x, int y)
@@ -254,6 +260,35 @@ public class PageArea
 //        return similaritySum/similarityCount;
     }
 
+    public double getSimilarityFromGraph(PageArea area, double x)
+    {
+        int v1, v2;
+        double m1, m2;
+
+        if (this.getChildren() != null && this.getChildren().size() > 0)
+        {
+            v1 = this.getChildren().size();
+        }
+        else
+        {
+            v1 = 1;
+        }
+
+        if (area.getChildren() != null && area.getChildren().size() > 0)
+        {
+            v2 = area.getChildren().size();
+        }
+        else
+        {
+            v2 = 1;
+        }
+
+        m1 = this.getMeanDistance();
+        m2 = area.getMeanDistance();
+
+        return ((v1-1)*v2*m1 + v1*v2*x + v1*(v2-1)*m2)/(v1*v2);
+    }
+
     public double getSimilarity(PageArea a)
     {
         double size = getSizeSimilarity(a);
@@ -278,6 +313,8 @@ public class PageArea
          * in this case it would group images instead of each image with its text)*/
         meanDiff = mean-size;
         shift = meanDiff;
+        meanDiff = mean-color;
+        shift -= meanDiff/2;
         /*
         TODO: it is also possible to emphasize importance of position similarity,
               but that might give bad results
@@ -493,5 +530,25 @@ public class PageArea
         }
 
         return this.rectangle;
+    }
+
+    public int getEdgeCount()
+    {
+        return edgeCount;
+    }
+
+    public void setEdgeCount(int edgeCount)
+    {
+        this.edgeCount = edgeCount;
+    }
+
+    public double getMeanDistance()
+    {
+        return meanDistance;
+    }
+
+    public void setMeanDistance(double meanDistance)
+    {
+        this.meanDistance = meanDistance;
     }
 }
