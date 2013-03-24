@@ -199,19 +199,6 @@ public class PageArea
     public boolean overlaps(PageArea obj)
     {
         return this.right >= obj.left && this.left <= obj.right && this.bottom >= obj.top && this.top <= obj.bottom;
-//        return (this.left <= obj.left && this.right >= obj.left && this.top <= obj.top && this.bottom >= obj.top) || // bottom right corner of 'this' is in 'obj'
-//               (this.left <= obj.right && this.right >= obj.right && this.top <= obj.top && this.bottom >= obj.top) || // bottom left corner of 'this' is in 'obj'
-//               (this.left <= obj.left && this.right >= obj.left && this.top <= obj.bottom && this.bottom >= obj.bottom) || // top right corner of 'this' is in 'obj'
-//               (this.left <= obj.right && this.right >= obj.right && this.top <= obj.bottom && this.bottom >= obj.bottom) || // top left corner of 'this' is in 'obj'
-//               (this.left >= obj.left && this.right <= obj.right && this.top <= obj.bottom && this.bottom >= obj.bottom) || // top edge of 'this' is in 'obj'
-//               (this.left >= obj.left && this.right <= obj.right && this.top <= obj.top && this.bottom >= obj.top) || // bottom edge of 'this' is in 'obj'
-//               (this.left <= obj.right && this.right >= obj.right && this.top >= obj.top && this.bottom <= obj.bottom) || // right edge of 'this' is in 'obj'
-//               (this.left <= obj.left && this.right >= obj.left && this.top >= obj.top && this.bottom <= obj.bottom) || // left edge of 'this' is in 'obj'
-//               (this.left <= obj.left && this.right >= obj.right && this.top <= obj.top && this.bottom >= obj.top) || // top edge of 'obj' is in 'this'
-//               (this.left <= obj.left && this.right >= obj.right && this.top <= obj.bottom && this.bottom >= obj.bottom) || // bottom edge of 'obj' is in 'this'
-//               (this.left <= obj.left && this.right >= obj.left && this.top <= obj.top && this.bottom >= obj.bottom) || // left edge of 'obj' is in 'this'
-//               (this.left <= obj.right && this.right >= obj.right && this.top <= obj.top && this.bottom >= obj.bottom) || // right edge of 'obj' is in 'this'
-//               this.contains(obj) || obj.contains(this);
     }
 
     public Color getColor()
