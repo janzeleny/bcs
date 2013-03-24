@@ -186,15 +186,6 @@ public class PageImage
             this.g.drawRect(rect.x, rect.y, rect.width, rect.height);
             this.g.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
-
-//        BufferedImage bgImg;
-//        List<BackgroundImage> images;
-//        images = box.getBackgroundImages();
-//        if (images != null && images.size() > 0)
-//        {
-//            bgImg = images.get(0).getBufferedImage();
-//            this.g.drawImage(bgImg, rect.x, rect.y, rect.width, rect.height, null);
-//        }
     }
 
     private Color getBgColor(ElementBox box)
