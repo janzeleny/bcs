@@ -21,21 +21,13 @@ import org.xml.sax.SAXException;
 
 public class Main
 {
-    public static void main(String []args) throws Exception, IOException, SAXException
+    public static final String home = "/home/greengo/";
+
+    private static DOMAnalyzer renderPage(URL url) throws Exception, IOException, SAXException
     {
-        URL url;
         InputStream is;
         URLConnection con;
-        PageImage img;
-        String urlString;
-        String imageString;
-        BrowserCanvas canvas;
 
-        if (args.length < 1) return;
-        urlString = args[0];
-        imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-");
-
-        url = new URL(urlString);
         con = url.openConnection();
         is = con.getInputStream();
         url = con.getURL(); /* Store this (possible redirect happened) */
@@ -50,25 +42,22 @@ public class Main
         da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
         da.getStyleSheets(); //load the author style sheets
 
+        return da;
+    }
 
-        canvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
+    private static void drawImage(BrowserCanvas canvas, String pageName)
+    {
+        PageImage img;
+
         img = new PageImage(canvas);
         img.draw();
-        img.save("/home/greengo/"+imageString+".png");
+        img.save(home+pageName+".png");
+    }
 
-        ArrayList<PageArea> areas;
-        ArrayList<PageArea> leaves;
-        ArrayList<PageArea> groups;
-        ArrayList<PageArea> ungrouped;
-        AreaProcessor h;
+    private static void drawBoxes(BrowserCanvas canvas, ArrayList<PageArea> groups, ArrayList<PageArea> ungrouped, String imageName)
+    {
         BufferedImage boxImg;
         Graphics2D g;
-
-        areas = img.getAreas();
-        h = new AreaProcessor(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
-        leaves = h.getAreas();
-        groups = h.extractGroups(h.getAreas());
-        ungrouped = h.getUngrouped();
 
         boxImg = new BufferedImage(canvas.getViewport().getWidth(), canvas.getViewport().getHeight(), BufferedImage.TYPE_INT_ARGB);
         g = boxImg.createGraphics();
@@ -85,10 +74,44 @@ public class Main
             g.drawRect(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight());
         }
 
-        File outputfile = new File("/home/greengo/"+imageString+"-boxes.png");
+        File outputfile = new File(home+imageName+"-boxes.png");
         try {
             ImageIO.write(boxImg, "png", outputfile);
         } catch (IOException e) {
         }
+    }
+
+    public static void main(String []args) throws Exception, IOException, SAXException
+    {
+        String urlString;
+        String imageString;
+        DOMAnalyzer da;
+        URL url;
+        BrowserCanvas canvas;
+        ArrayList<PageArea> areas;
+        ArrayList<PageArea> groups;
+        ArrayList<PageArea> ungrouped;
+
+        if (args.length < 1) return;
+        urlString = args[0];
+        imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-").replaceAll("\\?.*", "");
+        url = new URL(urlString);
+
+        da = renderPage(url);
+        canvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
+
+        drawImage(canvas, imageString);
+
+        AreaProcessor h;
+        AreaCreator c;
+
+        c = new AreaCreator(canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
+        areas = c.getAreas(canvas.getRootBox());
+
+        h = new AreaProcessor(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
+        groups = h.extractGroups(h.getAreas());
+        ungrouped = h.getUngrouped();
+
+        drawBoxes(canvas, groups, ungrouped, imageString);
     }
 }
