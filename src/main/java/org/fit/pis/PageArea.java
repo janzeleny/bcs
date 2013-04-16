@@ -308,7 +308,7 @@ public class PageArea
         int height;
         int top, bottom, left, right;
 
-        if (this == a) return 0;
+        if (this == a || this.overlaps(a)) return 0;
 
         /* DOC: Position distance: 0 - 1 */
         top = Math.min(this.top, a.top);
