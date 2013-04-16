@@ -25,6 +25,10 @@ public class PageArea
     public static final int ALIGNMENT_LINE = 1;
     public static final int ALIGNMENT_COLUMN = 2;
 
+    public static final double MAX_DIFF_RGB = 1.7320508075688772;
+    public static final double MAX_DIFF_LAB = 258.68384120267046;
+    public static final double MAX_DIFF_LCH = 149.93691702034678;
+
     public PageArea(Color c, int l, int t, int r, int b)
     {
         this.color = c;
@@ -210,7 +214,7 @@ public class PageArea
     public double getSimilarity(PageArea a)
     {
         double size = getSizeSimilarity(a);
-        double color = getColorSimilarity(a)/100; /* Color similarity has a different scale, we need to adjust it */
+        double color = getColorSimilarity(a);
         double position = getDistance(a);
         double mean, meanDiff, shift = 0;
         double sum;
@@ -272,11 +276,8 @@ public class PageArea
 
         if (this == a) return 0;
 
-        // TODO: fine-tune the color distance??
-        // color distance: 0-100
-        colorDistance = colorDiff(this.getColor(), a.getColor());
-        if (colorDistance < 0) colorDistance = 0;
-        else if (colorDistance > 100) colorDistance = 100;
+        colorDistance = colorDiffRgb(this.getColor(), a.getColor());
+        colorDistance /= MAX_DIFF_RGB;
 
         return colorDistance;
     }
@@ -357,6 +358,7 @@ public class PageArea
 
     public static double colorDiff(Color a, Color b)
     {
+        /* DOC: max value Lab: 258.68384120267046 - 0,0,255 - 0,255,0 */
         /* DOC: computing color difference according to CIE94, threshold value is 2.3 for not noticeable color diff */
         /* DOC: in the end I am using CIE76, it turned out to be more accurate for our purpose (empirically verified), CIE94 is commented out */
         /* DOC: we will probably use higher threshold because we want also similar colors (with noticeable diff) to be merged */
@@ -374,30 +376,64 @@ public class PageArea
         l2 = lab[0]; a2 = lab[1]; b2 = lab[2];
 
         return Math.sqrt(Math.pow(l2-l1, 2)+Math.pow(a2-a1, 2)+Math.pow(b2-b1, 2));
+    }
 
-//        // This is CIE94
-//        double diff;
-//        double part1, part2, part3;
-//        double C1, C2, deltaC;
-//        double deltaL;
-//        double deltaH;
-//
-//        deltaL = l1-l2;
-//        C1 = Math.sqrt(Math.pow(a1, 2)+Math.pow(b1, 2));
-//        C2 = Math.sqrt(Math.pow(a2, 2)+Math.pow(b2, 2));
-//        deltaC = C1-C2;
-//        deltaH = Math.sqrt(Math.pow(a1-a2, 2)+Math.pow(b1-b2, 2)-Math.pow(deltaC, 2));
-//
-//        part1 = deltaL;
-//        part2 = deltaC/(1+0.045*C1);
-//        part3 = deltaH/(1+0.015*C1);
-//        diff = Math.sqrt(Math.pow((part1), 2)+Math.pow((part2), 2)+Math.pow((part3), 2));
-//
-//        return diff;
+    public static double colorDiffLch(Color a, Color b)
+    {
+        /* DOC: max value LCH: 149.93691702034678 - 255,255,255 - 0,0,255 */
+        /* DOC: computing color difference according to CIE94, threshold value is 2.3 for not noticeable color diff */
+        /* DOC: in the end I am using CIE76, it turned out to be more accurate for our purpose (empirically verified), CIE94 is commented out */
+        /* DOC: we will probably use higher threshold because we want also similar colors (with noticeable diff) to be merged */
+        /* DOC: see http://en.wikipedia.org/wiki/Color_difference for details */
+        double []lab;
+        double []lch;
+        double l1, c1, h1;
+        double l2, c2, h2;
+        double dl, dc, dh;
+
+        // just return some high value to indicate a border of an area
+        if (a == null || b == null) return 100;
+
+        lab = rgbToLab(a.getRed(), a.getGreen(), a.getBlue());
+        lch = labToLch(lab);
+        l1 = lch[0]; c1 = lch[1]; h1 = lch[2];
+        lab = rgbToLab(b.getRed(), b.getGreen(), b.getBlue());
+        lch = labToLch(lab);
+        l2 = lch[0]; c2 = lch[1]; h2 = lch[2];
+
+        dl = l2 - l1;
+        dc = c2 - c1;
+        dc /= (1+0.045*c1);
+        dh = h2 - h1;
+        dh /= (1+0.015*c1);
+
+        return Math.sqrt(dl*dl + dc*dc + dh*dh);
+    }
+
+    public static double colorDiffRgb(Color color1, Color color2)
+    {
+        /* DOC: max value RGB: 1.7320508075688772 - 0,0,0 - 255,255,255 */
+        double r1, g1, b1;
+        double r2, g2, b2;
+        double dr, dg, db;
+
+        r1 = (double)color1.getRed()/255;
+        g1 = (double)color1.getGreen()/255;
+        b1 = (double)color1.getBlue()/255;
+        r2 = (double)color2.getRed()/255;
+        g2 = (double)color2.getGreen()/255;
+        b2 = (double)color2.getBlue()/255;
+
+        dr = r2-r1;
+        dg = g2-g1;
+        db = b2-b1;
+
+        return Math.sqrt(dr*dr + dg*dg + db*db);
     }
 
     private static double[] rgbToLab(int R, int G, int B)
     {
+        /* DOC: http://www.colourphil.co.uk/lab_lch_colour_space.html */
         double whiteX = 0.9505;
         double whiteY = 1.0;
         double whiteZ = 1.0888;
@@ -406,6 +442,15 @@ public class PageArea
         r = (double)R/255;
         g = (double)G/255;
         b = (double)B/255;
+
+        // TODO: this is not verified
+        // source: http://cookbooks.adobe.com/post_Useful_color_equations__RGB_to_LAB_converter-14227.html
+        if (r > 0.04045){ r = Math.pow((r + 0.055) / 1.055, 2.4); }
+        else { r = r / 12.92; }
+        if ( g > 0.04045){ g = Math.pow((g + 0.055) / 1.055, 2.4); }
+        else { g = g / 12.92; }
+        if (b > 0.04045){ b = Math.pow((b + 0.055) / 1.055, 2.4); }
+        else {  b = b / 12.92; }
 
         // DOC: we are assuming sRGB -> XYZ (sRGB source model sounds like the best option)
         double x, y, z;
@@ -438,6 +483,18 @@ public class PageArea
 
     private static double cubeRoot(double x) {
         return Math.pow(x, 1.0/3);
+    }
+
+    private static double[] labToLch(double []lab)
+    {
+        /* DOC: http://www.brucelindbloom.com/index.html?Eqn_Lab_to_LCH.html */
+        double []lch = new double[3];
+
+        lch[0] = lab[0];
+        lch[1] = Math.sqrt(lab[1]*lab[1]+lab[2]*lab[2]);
+        lch[2] = Math.atan2(lab[2], lab[1]);
+
+        return lch;
     }
 
     public Rectangle getRectangle()
