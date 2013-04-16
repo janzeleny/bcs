@@ -205,7 +205,8 @@ public class AreaProcessor2
         int v1, v2;
         PageAreaRelation relation;
         PageArea group;
-        boolean overlaps;
+        boolean group_overlap;
+        boolean area_overlap;
         AreaMatch match;
         double threshold;
 
@@ -234,9 +235,12 @@ public class AreaProcessor2
 
             match = new AreaMatch();
             this.groupTree.intersects(group.getRectangle(), match);
-            overlaps = (match.getIds().size() > 0);
+            group_overlap = (match.getIds().size() > 0);
+            match = new AreaMatch();
+            this.areaTree.intersects(group.getRectangle(), match);
+            area_overlap = (match.getIds().size() > 2); /* It will always overlap with the two areas already in the group */
 
-            if (overlaps)
+            if (group_overlap || area_overlap)
             {
                 this.reclaim(a);
                 this.reclaim(b);
