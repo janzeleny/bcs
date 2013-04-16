@@ -213,7 +213,7 @@ public class PageArea
 
     public double getSimilarity(PageArea a)
     {
-        double size = getSizeSimilarity(a);
+        double shape = getShapeSimilarity(a);
         double color = getColorSimilarity(a);
         double position = getDistance(a);
         double mean, meanDiff, shift = 0;
@@ -228,7 +228,7 @@ public class PageArea
          * - to project that fact, we need to shift the size similarity factor closer
          *   to the mean value */
 
-        mean = (size + color + position)/3;
+        mean = (shape + color + position)/3;
         /* first lower importance of size similarity */
         /* DOC: we need to do this, otherwise on structured pages, it would incorrectly match some elements
          * (e.g. image with some text for one element, multiple elements listed one under another:
@@ -244,7 +244,7 @@ public class PageArea
         shift -= meanDiff/2;
         */
 
-        sum = size + shift + color + position;
+        sum = shape + shift + color + position;
 
         if (sum > 3) sum = 3;
         else if (sum < 0) sum = 0;
@@ -268,6 +268,24 @@ public class PageArea
         heightRatio = (double)Math.abs(this.getHeight()-a.getHeight())/(this.getHeight() + a.getHeight());
 
         return Math.min(widthRatio, heightRatio);
+    }
+
+    public double getShapeSimilarity(PageArea a)
+    {
+        int surface1, surface2;
+        double ratio1, ratio2;
+        double ratioSimilarity;
+        double surfaceSimilarity;
+
+        ratio1 = (double)this.getWidth()/this.getHeight();
+        ratio2 = (double)a.getWidth()/a.getHeight();
+        surface1 = this.getWidth()*this.getHeight();
+        surface2 = a.getWidth()*a.getHeight();
+
+        ratioSimilarity = (ratio1-ratio2)/((ratio1*ratio1-1)/ratio1);
+        surfaceSimilarity = 1-Math.min(surface1, surface2)/Math.max(surface1, surface2);
+
+        return (ratioSimilarity+surfaceSimilarity)/2;
     }
 
     public double getColorSimilarity(PageArea a)
