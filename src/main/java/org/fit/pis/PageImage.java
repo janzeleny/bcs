@@ -161,9 +161,9 @@ public class PageImage
         ContentImage imgObj = (ContentImage)box.getContentObj();
 
         avg = new AverageColor(imgObj.getBufferedImage());
-        if (avg.getColor() == null) return;
+        if (avg.getColor() == null) this.g.setColor(Color.black);
+        else this.g.setColor(avg.getColor());
 
-        this.g.setColor(avg.getColor());
         this.g.drawRect(pos.x, pos.y, pos.width, pos.height);
         this.g.fillRect(pos.x, pos.y, pos.width, pos.height);
 

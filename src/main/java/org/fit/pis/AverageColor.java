@@ -23,6 +23,12 @@ public class AverageColor
         int count, totalCount;
 
         count = totalCount = 0;
+        if (im == null)
+        {
+            this.color = null;
+            this.coloredPortion = 0;
+            return;
+        }
         // DOC: how do we count color average
         for (y = 0; y < im.getHeight(); y++)
         {
