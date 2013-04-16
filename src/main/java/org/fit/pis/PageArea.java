@@ -14,9 +14,6 @@ public class PageArea
     private int top;
     private int bottom;
 
-    private int startX;
-    private int startY;
-
     private PageArea parent;
     private ArrayList<PageArea> children;
 
@@ -50,21 +47,6 @@ public class PageArea
         this.bottom = a.bottom;
         this.edgeCount = a.edgeCount;
         this.meanDistance = a.meanDistance;
-    }
-
-    public boolean containsPixel(int x, int y)
-    {
-        return x >= this.left && x <= this.right &&
-               y >= this.top && y <= this.bottom;
-    }
-
-    public boolean equals(PageArea obj)
-    {
-        return this.color.equals(obj.color) &&
-               this.left == obj.left &&
-               this.right == obj.right &&
-               this.top == obj.top &&
-               this.bottom == obj.bottom;
     }
 
     public boolean contains(PageArea obj)
@@ -194,70 +176,6 @@ public class PageArea
     public PageArea getParent()
     {
         return this.parent;
-    }
-
-    public double getSimilarityRecursive(PageArea area)
-    {
-        double bestMatch = 100;
-        double similarity;
-        double similaritySum;
-        int similarityCount;
-
-        if (this.getChildren() != null && this.getChildren().size() > 0)
-        {
-            if (area.getChildren() != null && area.getChildren().size() > 0)
-            {
-                /* Both object have children, we need to compare each couple of children */
-                similarityCount = 0;
-                similaritySum = 0;
-                for (PageArea a: this.getChildren())
-                {
-                    for (PageArea b: area.getChildren())
-                    {
-                        similarity = a.getSimilarity(b);
-                        if (similarity < bestMatch) bestMatch = similarity;
-                        similaritySum += similarity;
-                        similarityCount++;
-                    }
-                }
-            }
-            else
-            {
-                /* area has no children, we need to compare it to all children of this object */
-                similarityCount = 0;
-                similaritySum = 0;
-                for (PageArea a: this.getChildren())
-                {
-                    similarity = area.getSimilarity(a);
-                    if (similarity < bestMatch) bestMatch = similarity;
-                    similaritySum += similarity;
-                    similarityCount++;
-                }
-            }
-        }
-        else if (area.getChildren() != null && area.getChildren().size() > 0)
-        {
-            /* area has children, we need to compare each of them to this object */
-            similarityCount = 0;
-            similaritySum = 0;
-            for (PageArea a: area.getChildren())
-            {
-                similarity = this.getSimilarity(a);
-                if (similarity < bestMatch) bestMatch = similarity;
-                similaritySum += similarity;
-                similarityCount++;
-            }
-        }
-        else
-        {
-            similarity = this.getSimilarity(area);
-            if (similarity < bestMatch) bestMatch = similarity;
-            similaritySum = similarity;
-            similarityCount = 1;
-        }
-
-        return bestMatch;
-//        return similaritySum/similarityCount;
     }
 
     public double getSimilarityFromGraph(PageArea area, double x)

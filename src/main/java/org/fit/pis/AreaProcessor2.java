@@ -1,7 +1,10 @@
 package org.fit.pis;
 
+import gnu.trove.TIntProcedure;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +13,57 @@ import java.util.Map;
 import com.infomatiq.jsi.Rectangle;
 import com.infomatiq.jsi.SpatialIndex;
 import com.infomatiq.jsi.rtree.RTree;
+
+
+class AreaSizeComparator implements Comparator<PageArea> {
+    @Override
+    public int compare(PageArea a, PageArea b) {
+        int sizeA, sizeB;
+
+        sizeA = a.getWidth()*a.getHeight();
+        sizeB = b.getWidth()*b.getHeight();
+        return sizeA-sizeB;
+    }
+}
+
+class AreaTopComparator implements Comparator<PageArea> {
+    @Override
+    public int compare(PageArea a, PageArea b) {
+        return a.getTop()-b.getTop();
+    }
+}
+
+class AreaSimilarityComparator implements Comparator<PageAreaRelation> {
+    @Override
+    public int compare(PageAreaRelation a, PageAreaRelation b) {
+        double diff = a.getSimilarity() - b.getSimilarity();
+
+        if (diff > 0) return 1;
+        else if (diff < 0) return -1;
+        else return 0;
+    }
+}
+
+class AreaMatch implements TIntProcedure
+{
+    private final ArrayList<Integer> ids;
+
+    public AreaMatch()
+    {
+        this.ids = new ArrayList<Integer>();
+    }
+
+    @Override
+    public boolean execute(int id) {
+        ids.add(id);
+        return true;
+    }
+
+    public ArrayList<Integer> getIds() {
+        return ids;
+    }
+};
+
 
 
 public class AreaProcessor2
