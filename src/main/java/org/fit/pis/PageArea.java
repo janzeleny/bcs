@@ -229,6 +229,7 @@ public class PageArea
 
         if (this == a) return 0;
 
+        /* DOC: size similarity is not used currently */
         /* DOC: size similarity has to be counted separately for width and height and the better
          * value should be then used - if two boxes are size-similar, they will usually have the
          * same size only in one direction, the difference in the other direction one might be
@@ -264,6 +265,15 @@ public class PageArea
 
         if (this == a) return 0;
 
+        /* DOC: we are using RGB color diff
+         * - Lab and LCH color spaces operate with the fact that human eye is
+         *   more sensitive to brightness than to color hue
+         * - however our assumption is that creators of the web use more color hue
+         *   to distinguish different (unrelated) elements on the page
+         *   This has also been experimentally evaluated - RGB color diff gave better
+         *   results when used for element clustering
+         * good reference book for color spaces: Understanding Color Management
+         */
         colorDistance = colorDiffRgb(this.getColor(), a.getColor());
         colorDistance /= MAX_DIFF_RGB;
 
