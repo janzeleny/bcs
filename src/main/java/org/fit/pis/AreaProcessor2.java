@@ -76,7 +76,7 @@ public class AreaProcessor2
     private final HashSet<PageArea> groups;
     private final ArrayList<PageArea> ungrouped;
 
-    public static final double similarityThreshold = 0.05;
+    public static final double similarityThreshold = 0.1;
 
     private final int pageWidth;
     private final int pageHeight;
@@ -188,11 +188,10 @@ public class AreaProcessor2
             }
         }
 
-
         return ret;
     }
 
-    private void locateGroups(List<PageAreaRelation> relations) throws Exception
+    private void locateGroups(ArrayList<PageAreaRelation> relations) throws Exception
     {
         PageArea a, b;
         int v1, v2, vsum;
@@ -216,7 +215,7 @@ public class AreaProcessor2
                 b = relation.getB();
             } while (relations.size() > 0 && (a.getParent() != null || b.getParent() != null));
 
-            if (relations.size() == 0) break;
+            if (relations.size() == 0 && a.getParent() == null && b.getParent() == null) break;
 
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
@@ -658,6 +657,7 @@ public class AreaProcessor2
                 rel = new PageAreaRelation(a, b, similarity, PageAreaRelation.DIRECTION_VERTICAL);
                 relations.add(rel);
             }
+
         }
 
         Collections.sort(relations, new AreaSimilarityComparator());
