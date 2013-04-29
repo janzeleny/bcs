@@ -203,6 +203,7 @@ public class PageArea
     {
         int v1, v2;
         double m1, m2;
+        double distance;
 
         if (this.getChildren() != null && this.getChildren().size() > 0)
         {
@@ -220,6 +221,13 @@ public class PageArea
         else
         {
             v2 = 1;
+        }
+
+        if (v1 > 1 && v2 > 1)
+        {
+            /* Two groups might be touching each other */
+            distance = this.getDistance(area);
+            if (distance == 0) return 0;
         }
 
         m1 = this.getMeanDistance();
