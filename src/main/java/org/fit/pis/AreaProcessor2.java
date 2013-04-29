@@ -145,10 +145,6 @@ public class AreaProcessor2
             if (a.getChildren() == null || a.getChildren().size() == 0)
             {
                 parent = a;
-                while (parent.getParent() != null && parent.getParent().getChildren().size() == 1)
-                {
-                    parent = parent.getParent();
-                }
                 parent.setParent(null);
                 if (parent.getChildren() != null)
                 {

@@ -68,8 +68,7 @@ public class AreaCreator
             {
                 if (this.hasNoBranches((ElementBox)child))
                 {
-                    // TODO: we need to figure out the color which we will use to render this box
-                    this.getArea(root, parentBg);
+                    this.getSmallestBox(root, parentBg);
                     return;
                 }
 
@@ -117,6 +116,47 @@ public class AreaCreator
         }
     }
 
+    private void getSmallestBox(ElementBox root, Color parentBg)
+    {
+        int start, end;
+        Box child;
+        Color bgColor;
+
+
+        start = root.getStartChild();
+        end = root.getEndChild();
+
+        if (start == end)
+        {
+            /* No children - we have to return this one */
+            this.getArea(root, parentBg);
+        }
+        else
+        {
+            child = root.getSubBox(start);
+            bgColor = this.getBgColor(root, parentBg);
+            if (child instanceof TextBox)
+            {
+                this.getTextArea((TextBox)child, bgColor);
+            }
+            else if (child instanceof ReplacedBox)
+            {
+                this.getImageArea((ReplacedBox)child, child.getAbsoluteContentBounds());
+            }
+            else
+            {
+                if (this.isTransparent(root))
+                {
+                    getSmallestBox((ElementBox)child, parentBg);
+                }
+                else
+                {
+                    this.getArea((ElementBox)child, parentBg);
+                }
+            }
+        }
+    }
+
     private Color getBgColor(ElementBox box, Color parentBg)
     {
         List<BackgroundImage> images;
@@ -154,6 +194,17 @@ public class AreaCreator
         }
 
         return color;
+    }
+
+    private boolean isTransparent(ElementBox box)
+    {
+        List<BackgroundImage> images;
+        Color color;
+
+        images = box.getBackgroundImages();
+        color = box.getBgcolor();
+
+        return (color == null && (images == null || images.size() == 0));
     }
 
     private void getTextArea(TextBox box, Color bgColor)
