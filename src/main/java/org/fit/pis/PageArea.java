@@ -212,40 +212,14 @@ public class PageArea
         double shape = getShapeSimilarity(a);
         double color = getColorSimilarity(a);
         double position = getDistance(a);
-        double mean, meanDiff, shift = 0;
-        double sum;
 
         if (position == 0.0)
         {
             return 0.0;
         }
 
-        /* DOC: size similarity has lower precedence than color and position similarity
-         * - to project that fact, we need to shift the size similarity factor closer
-         *   to the mean value */
 
-        mean = (shape + color + position)/3;
-        /* first lower importance of size similarity */
-        /* DOC: we need to do this, otherwise on structured pages, it would incorrectly match some elements
-         * (e.g. image with some text for one element, multiple elements listed one under another:
-         * in this case it would group images instead of each image with its text)*/
-        meanDiff = mean-size;
-        shift = meanDiff;
-        meanDiff = mean-color;
-        shift -= meanDiff/2;
-        /*
-        TODO: it is also possible to emphasize importance of position similarity,
-              but that might give bad results
-        meanDiff = mean-position;
-        shift -= meanDiff/2;
-        */
-
-        sum = shape + shift + color + position;
-
-        if (sum > 3) sum = 3;
-        else if (sum < 0) sum = 0;
-
-        return sum/3;
+        return (shape + color + position)/3;
     }
 
     public double getSizeSimilarity(PageArea a)
