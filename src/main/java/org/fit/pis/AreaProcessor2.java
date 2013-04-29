@@ -442,7 +442,6 @@ public class AreaProcessor2
                 b = areas.get(index);
                 if (a == b) continue;
                 similarity = a.getSimilarity(b);
-                if (similarity > similarityThreshold) continue;
                 rel = new PageAreaRelation(a, b, similarity, PageAreaRelation.DIRECTION_HORIZONTAL);
                 relations.add(rel);
             }
@@ -456,7 +455,6 @@ public class AreaProcessor2
                 b = areas.get(index);
                 if (a == b) continue;
                 similarity = a.getSimilarity(b);
-                if (similarity > similarityThreshold) continue;
                 rel = new PageAreaRelation(a, b, similarity, PageAreaRelation.DIRECTION_VERTICAL);
                 relations.add(rel);
             }
