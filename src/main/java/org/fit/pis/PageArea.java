@@ -52,6 +52,11 @@ public class PageArea
 
     public PageArea(PageArea a)
     {
+        this(a, false);
+    }
+
+    public PageArea(PageArea a, boolean inheritChildren)
+    {
         this.color = new Color(a.color.getRGB());
         this.left = a.left;
         this.right = a.right;
@@ -62,6 +67,12 @@ public class PageArea
         this.hEdgeCount = a.hEdgeCount;
         this.meanDistance = a.meanDistance;
         this.children = new ArrayList<PageArea>();
+
+        if (inheritChildren)
+        {
+            /* We don't want to change the relationships, just transfer the references */
+            this.children.addAll(a.getChildren());
+        }
     }
 
     public boolean contains(PageArea obj)
@@ -352,7 +363,7 @@ public class PageArea
                Math.sqrt(width*width+height*height);
     }
 
-    private int getAlignment(PageArea a)
+    public int getAlignment(PageArea a)
     {
         if (this.bottom >= a.top && this.top <= a.bottom) return ALIGNMENT_LINE;
         else if (this.right >= a.left && this.left <= a.right) return ALIGNMENT_COLUMN;
@@ -523,6 +534,11 @@ public class PageArea
     public void setEdgeCount(int edgeCount)
     {
         this.edgeCount = edgeCount;
+    }
+
+    public void addEdgeCount(int edgeCount)
+    {
+        this.edgeCount += edgeCount;
     }
 
     public double getMeanDistance()
