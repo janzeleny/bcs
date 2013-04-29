@@ -19,11 +19,17 @@ public class PageArea
 
     private Rectangle rectangle;
     private int edgeCount;
+    private int vEdgeCount;
+    private int hEdgeCount;
     private double meanDistance;
 
     public static final int ALIGNMENT_NONE = 0;
     public static final int ALIGNMENT_LINE = 1;
     public static final int ALIGNMENT_COLUMN = 2;
+
+    public static final int SHAPE_BLOB = 0;
+    public static final int SHAPE_COLUMN = 1;
+    public static final int SHAPE_ROW = 2;
 
     public static final double MAX_DIFF_RGB = 1.7320508075688772;
     public static final double MAX_DIFF_LAB = 258.68384120267046;
@@ -39,6 +45,8 @@ public class PageArea
         this.children = new ArrayList<PageArea>();
         this.rectangle = null;
         this.edgeCount = 0;
+        this.vEdgeCount = 0;
+        this.hEdgeCount = 0;
         this.meanDistance = 0;
     }
 
@@ -50,6 +58,8 @@ public class PageArea
         this.top = a.top;
         this.bottom = a.bottom;
         this.edgeCount = a.edgeCount;
+        this.vEdgeCount = a.vEdgeCount;
+        this.hEdgeCount = a.hEdgeCount;
         this.meanDistance = a.meanDistance;
         this.children = new ArrayList<PageArea>();
     }
@@ -523,5 +533,73 @@ public class PageArea
     public void setMeanDistance(double meanDistance)
     {
         this.meanDistance = meanDistance;
+    }
+
+    public int getVEdgeCount()
+    {
+        return vEdgeCount;
+    }
+
+    public double getVRatio()
+    {
+        if (this.vEdgeCount == 0) return 0.1;
+        else if (this.edgeCount == 0) return 0;
+        else return this.vEdgeCount/this.edgeCount;
+    }
+
+    public void setVEdgeCount(int vEdgeCount)
+    {
+        this.vEdgeCount = vEdgeCount;
+    }
+
+    public void addVEdgeCount(int vEdgeCount)
+    {
+        this.vEdgeCount = vEdgeCount;
+    }
+
+    public int getHEdgeCount()
+    {
+        return hEdgeCount;
+    }
+
+    public double getHRatio()
+    {
+        if (this.hEdgeCount == 0) return 0.1;
+        else if (this.edgeCount == 0) return 0;
+        else return this.hEdgeCount/this.edgeCount;
+    }
+
+    public void setHEdgeCount(int hEdgeCount)
+    {
+        this.hEdgeCount = hEdgeCount;
+    }
+
+    public void addHEdgeCount(int hEdgeCount)
+    {
+        this.hEdgeCount = hEdgeCount;
+    }
+
+    public boolean isRow()
+    {
+        if (this.getHRatio() > 2*this.getVRatio()) return true;
+        else return false;
+    }
+
+    public boolean isColumn()
+    {
+        if (this.getHRatio() < 0.5*this.getVRatio()) return true;
+        else return false;
+    }
+
+    public int getShape()
+    {
+        if (this.isRow()) return SHAPE_ROW;
+        else if (this.isColumn()) return SHAPE_COLUMN;
+        else return SHAPE_BLOB;
+    }
+
+    public boolean isBlob()
+    {
+        return !(this.isColumn() || this.isRow());
     }
 }
