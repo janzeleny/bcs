@@ -361,9 +361,9 @@ public class AreaProcessor2
     {
         int i;
         PageAreaRelation rel;
+        PageAreaRelation bestRel;
         PageArea candidate;
-        HashMap<PageArea, Double> neighbours = new HashMap<PageArea, Double>();
-        double val;
+        HashMap<PageArea, PageAreaRelation> neighbours = new HashMap<PageArea, PageAreaRelation>();
 
         for (i = 0; i < relations.size(); i++)
         {
@@ -386,6 +386,7 @@ public class AreaProcessor2
                  * (code above can change in the future) */
                 if (candidate != oldGroup1 && candidate != oldGroup2)
                 {
+                    /* Again, just in case ... */
                     if (candidate.getParent() != null)
                     {
                         candidate = candidate.getParent();
@@ -393,16 +394,21 @@ public class AreaProcessor2
 
                     if (neighbours.containsKey(candidate))
                     {
-                        val = neighbours.get(candidate);
-                    }
-                    else
-                    {
-                        val = 100;
-                    }
-
-                    if (rel.getSimilarity() < val)
-                    {
-                        neighbours.put(candidate, rel.getSimilarity());
+                        if (neighbours.containsKey(candidate))
+                        {
+                            bestRel = neighbours.get(candidate);
+                            bestRel.addCardinality(rel.getCardinality());
+                            if (rel.getSimilarity() < bestRel.getSimilarity())
+                            {
+                                bestRel.setSimilarity(rel.getSimilarity());
+                            }
+                        }
+                        else
+                        {
+                            bestRel = new PageAreaRelation(newGroup, candidate, rel.getSimilarity(), rel.getDirection());
+                            bestRel.setCardinality(rel.getCardinality());
+                            neighbours.put(candidate, bestRel);
+                        }
                     }
                 }
 
@@ -411,10 +417,9 @@ public class AreaProcessor2
             }
         }
 
-        for (Map.Entry<PageArea, Double> entry : neighbours.entrySet())
+        for (Map.Entry<PageArea, PageAreaRelation> entry : neighbours.entrySet())
         {
-            rel = new PageAreaRelation(newGroup, entry.getKey(), entry.getValue());
-            relations.add(rel);
+            relations.add(entry.getValue());
         }
 
         Collections.sort(relations, new AreaSimilarityComparator());
