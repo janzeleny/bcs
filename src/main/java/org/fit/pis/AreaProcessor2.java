@@ -225,7 +225,7 @@ public class AreaProcessor2
                 continue;
             }
 
-            group = this.mergeAreas(a, b, relation.getSimilarity());
+            group = this.mergeAreas(a, b, relation);
 
             match = new AreaMatch();
             this.groupTree.intersects(group.getRectangle(), match);
@@ -267,11 +267,14 @@ public class AreaProcessor2
         }
     }
 
-    private PageArea mergeAreas(PageArea a, PageArea b, double x)
+    private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
     {
         int e, e1, e2;
-        double m;
+        double m, x;
         PageArea group;
+        int vert, horiz;
+
+        x = rel.getSimilarity();
 
         e1 = a.getChildren().size();
         e2 = b.getChildren().size();
@@ -280,8 +283,21 @@ public class AreaProcessor2
 
         m = getMergedM(a, b, x);
 
+        vert = a.getVEdgeCount()+b.getVEdgeCount();
+        horiz = a.getHEdgeCount()+b.getHEdgeCount();
+        if (rel.getDirection() == PageAreaRelation.DIRECTION_VERTICAL)
+        {
+            vert += rel.getCardinality();
+        }
+        else
+        {
+            horiz += rel.getCardinality();
+        }
+
         group = new PageArea(a);
         group.setEdgeCount(e);
+        group.setVEdgeCount(vert);
+        group.setHEdgeCount(horiz);
         group.setMeanDistance(m);
 
         if (a.getChildren().size() > 0)
