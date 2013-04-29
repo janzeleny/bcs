@@ -195,10 +195,9 @@ public class AreaProcessor2
     private void locateGroups(List<PageAreaRelation> relations) throws Exception
     {
         PageArea a, b;
-        int v1, v2;
+        int v1, v2, vsum;
         PageAreaRelation relation;
         PageArea group;
-        boolean group_overlap;
         boolean area_overlap;
         AreaMatch match;
         double threshold;
@@ -221,6 +220,8 @@ public class AreaProcessor2
 
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
+            vsum = v1 + v2;
+
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
 //            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
             threshold = similarityThreshold;
@@ -240,19 +241,31 @@ public class AreaProcessor2
 
             group = this.mergeAreas(a, b, relation);
 
-            match = new AreaMatch();
-            this.groupTree.intersects(group.getRectangle(), match);
-            group_overlap = (match.getIds().size() > 0);
-            match = new AreaMatch();
-            this.areaTree.intersects(group.getRectangle(), match);
-            area_overlap = (match.getIds().size() > 2); /* It will always overlap with the two areas already in the group */
 
-            if (group_overlap || area_overlap)
-            {
-                this.reclaim(a);
-                this.reclaim(b);
-            }
-            else
+            do {
+                match = new AreaMatch();
+                this.areaTree.intersects(group.getRectangle(), match);
+                /* It will always overlap with the two areas already in the group */
+                area_overlap = (match.getIds().size() > vsum);
+
+                if (area_overlap)
+                {
+                    /* First try to include all those overlapping areas in the group */
+                    if (!this.growGroup(group, match.getIds()))
+                    {
+                        this.reclaim(a);
+                        this.reclaim(b);
+                        this.returnChildren(group);
+                        break;
+                    }
+                    else
+                    {
+                        vsum = group.getChildren().size();
+                    }
+                }
+            } while (area_overlap);
+
+            if (!area_overlap)
             {
                 /* Now we have to add children completely */
                 this.transferRelations(a, b, group, relations);
@@ -339,6 +352,82 @@ public class AreaProcessor2
         match = new AreaMatch();
         this.areaTree.intersects(tmpArea.getRectangle(), match);
         return (match.getIds().size() <= areaCnt);
+    }
+
+    private boolean growGroup(PageArea group, ArrayList<Integer> areas)
+    {
+        boolean merged = true;
+        ArrayList<Integer> copy = new ArrayList<Integer>();
+        copy.addAll(areas);
+        PageArea area;
+        Integer index;
+
+        /* At the first pass, allow growing group only for areas that are
+         * actually bordering/overlapping with different areas in the group */
+
+        /* First identify that all the areas are either in the group or are
+         * matching the condition above (overlap/borderline with other areas in the group) */
+        while (merged)
+        {
+            merged = false;
+            for (int i = 0 ; i < copy.size() ; i++)
+            {
+                index = copy.get(i);
+                area = this.areas.get(index);
+                if (area.getParent() == group)
+                {
+                    copy.remove(i);
+                    i--;
+                    continue;
+                }
+                else if (area.getParent() != null)
+                {
+                    /* This belongs to another group - that's a show stopper */
+
+                    return false;
+                }
+                else
+                {
+                    for (PageArea child: group.getChildren())
+                    {
+                        if (area.overlaps(child))
+                        {
+                            merged = true;
+                            group.addChild(area);
+                            break;
+                        }
+                    }
+                    if (merged == true)
+                    {
+                        copy.remove(i);
+                        i--;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (copy.size() > 0)
+        {
+            /* There are some areas that don't overlap with areas in the group */
+            return false;
+        }
+
+        return true;
+    }
+
+    private void returnChildren(PageArea group)
+    {
+        for (PageArea child: group.getChildren())
+        {
+            /* We need to return all areas that have been added to
+             * the tmpGroup (not those inherited from the original group)
+             * to the pool */
+            if (child.getParent() == group)
+            {
+                child.setParent(null);
+            }
+        }
     }
 
     private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
