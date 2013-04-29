@@ -202,6 +202,10 @@ public class AreaProcessor2
         boolean area_overlap;
         AreaMatch match;
         double threshold;
+        double similarity;
+        int relCnt = relations.size();
+        ArrayList<PageAreaRelation> mtRelations = new ArrayList<PageAreaRelation>();
+        boolean mergeTest;
 
         this.time.toggle();
         while (relations.size() > 0)
@@ -220,8 +224,17 @@ public class AreaProcessor2
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
 //            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
             threshold = similarityThreshold;
-            if (a.getSimilarityFromGraph(b, relation.getSimilarity()) > threshold)
+            similarity = a.getSimilarityFromGraph(b, relation.getSimilarity());
+            mergeTest = this.mergeTest(relation);
+            if (similarity > threshold || !mergeTest)
             {
+                if (similarity <= threshold && !mergeTest) mtRelations.add(relation);
+                if (relations.size() == 0 && mtRelations.size() < relCnt)
+                {
+                    relations.addAll(mtRelations);
+                    relCnt = relations.size();
+                    mtRelations.clear();
+                }
                 continue;
             }
 
@@ -250,6 +263,13 @@ public class AreaProcessor2
                 this.groupTree.delete(b.getRectangle(), 0);
                 this.groupTree.add(group.getRectangle(), 0);
             }
+
+            if (relations.size() == 0 && mtRelations.size() < relCnt)
+            {
+                relations.addAll(mtRelations);
+                relCnt = relations.size();
+                mtRelations.clear();
+            }
         }
         this.time.toggle();
         System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
@@ -265,6 +285,60 @@ public class AreaProcessor2
         {
             return 1;
         }
+    }
+
+    private boolean mergeTest(PageAreaRelation rel)
+    {
+        PageArea a, b;
+        int direction;
+        int aShape, bShape;
+
+        a = rel.getA();
+        b = rel.getB();
+        direction = rel.getDirection();
+
+        aShape = a.getShape();
+        bShape = b.getShape();
+
+        if (direction == PageAreaRelation.DIRECTION_HORIZONTAL)
+        {
+            if (aShape == bShape)
+            {
+                if (aShape == PageArea.SHAPE_COLUMN) return false;
+                else return true;
+            }
+            else
+            {
+                return this.mergeTestAlignment(a, b);
+            }
+        }
+        else
+        {
+            if (aShape == bShape)
+            {
+                if (aShape == PageArea.SHAPE_ROW) return false;
+                else return true;
+            }
+            else
+            {
+                return this.mergeTestAlignment(a, b);
+            }
+        }
+    }
+
+    private boolean mergeTestAlignment(PageArea a, PageArea b)
+    {
+        PageArea tmpArea;
+        AreaMatch match;
+        int areaCnt;
+
+        tmpArea = new PageArea(a);
+        tmpArea.addChild(b, true);
+        areaCnt = this.getAreaCount(a)+this.getAreaCount(b);
+
+        match = new AreaMatch();
+        this.areaTree.intersects(tmpArea.getRectangle(), match);
+        return (match.getIds().size() <= areaCnt);
     }
 
     private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
