@@ -15,7 +15,7 @@ public class PageArea
     private int bottom;
 
     private PageArea parent;
-    private ArrayList<PageArea> children;
+    private final ArrayList<PageArea> children;
 
     private Rectangle rectangle;
     private int edgeCount;
@@ -36,7 +36,7 @@ public class PageArea
         this.top = t;
         this.right = r;
         this.bottom = b;
-        this.children = null;
+        this.children = new ArrayList<PageArea>();
         this.rectangle = null;
         this.edgeCount = 0;
         this.meanDistance = 0;
@@ -51,6 +51,7 @@ public class PageArea
         this.bottom = a.bottom;
         this.edgeCount = a.edgeCount;
         this.meanDistance = a.meanDistance;
+        this.children = new ArrayList<PageArea>();
     }
 
     public boolean contains(PageArea obj)
@@ -144,11 +145,6 @@ public class PageArea
 
     public void addChild(PageArea child, boolean tryout)
     {
-        if (this.children == null)
-        {
-            this.children = new ArrayList<PageArea>();
-        }
-
         this.children.add(child);
         if (!tryout)
         {

@@ -142,14 +142,11 @@ public class AreaProcessor2
 
         for (PageArea a: areas)
         {
-            if (a.getChildren() == null || a.getChildren().size() == 0)
+            if (a.getChildren().size() == 0)
             {
                 parent = a;
                 parent.setParent(null);
-                if (parent.getChildren() != null)
-                {
-                    parent.getChildren().clear();
-                }
+                parent.getChildren().clear();
                 this.areas.add(parent);
                 this.areaTree.add(parent.getRectangle(), this.areas.size()-1);
             }
@@ -218,10 +215,11 @@ public class AreaProcessor2
 
             if (relations.size() == 0) break;
 
+            v1 = this.getAreaCount(a);
+            v2 = this.getAreaCount(b);
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
-            v1 = (a.getChildren() == null || a.getChildren().size() == 0)?1:a.getChildren().size();
-            v2 = (b.getChildren() == null || b.getChildren().size() == 0)?1:b.getChildren().size();
-            threshold = similarityThreshold*(Math.log10(v1+v2)+1);
+//            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
+            threshold = similarityThreshold;
             if (a.getSimilarityFromGraph(b, relation.getSimilarity()) > threshold)
             {
                 continue;
@@ -257,14 +255,26 @@ public class AreaProcessor2
         System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
     }
 
+    private int getAreaCount(PageArea a)
+    {
+        if (a.getChildren().size() > 0)
+        {
+            return a.getChildren().size();
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
     private PageArea mergeAreas(PageArea a, PageArea b, double x)
     {
         int e, e1, e2;
         double m;
         PageArea group;
 
-        e1 = (a.getChildren() != null)?a.getChildren().size():0;
-        e2 = (b.getChildren() != null)?b.getChildren().size():0;
+        e1 = a.getChildren().size();
+        e2 = b.getChildren().size();
         e = a.getEdgeCount()+b.getEdgeCount();
         e += ((e1 > 0)?e1:1)*((e2 > 0)?e2:1);
 
@@ -274,7 +284,7 @@ public class AreaProcessor2
         group.setEdgeCount(e);
         group.setMeanDistance(m);
 
-        if (a.getChildren() != null && a.getChildren().size() > 0)
+        if (a.getChildren().size() > 0)
         {
             for (PageArea child: a.getChildren())
             {
@@ -286,7 +296,7 @@ public class AreaProcessor2
             group.addChild(a);
         }
 
-        if (b.getChildren() != null && b.getChildren().size() > 0)
+        if (b.getChildren().size() > 0)
         {
             for (PageArea child: b.getChildren())
             {
@@ -303,7 +313,7 @@ public class AreaProcessor2
 
     private void reclaim(PageArea a)
     {
-        if (a.getChildren() == null || a.getChildren().size() == 0)
+        if (a.getChildren().size() == 0)
         {
             a.setParent(null);
         }
@@ -321,7 +331,7 @@ public class AreaProcessor2
         int v1, v2, e1, e2;
         double m1, m2;
 
-        if (a.getChildren() != null && a.getChildren().size() > 0)
+        if (a.getChildren().size() > 0)
         {
             v1 = a.getChildren().size();
         }
@@ -330,7 +340,7 @@ public class AreaProcessor2
             v1 = 0;
         }
 
-        if (b.getChildren() != null && b.getChildren().size() > 0)
+        if (b.getChildren().size() > 0)
         {
             v2 = b.getChildren().size();
         }
