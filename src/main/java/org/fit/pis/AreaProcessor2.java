@@ -568,10 +568,26 @@ public class AreaProcessor2
                     /* Again, just in case ... */
                     if (candidate.getParent() != null)
                     {
-                        candidate = candidate.getParent();
+                        if (candidate.getParent() == newGroup)
+                        {
+                            if (rel.getDirection() == PageAreaRelation.DIRECTION_HORIZONTAL)
+                            {
+                                newGroup.addHEdgeCount(rel.getCardinality());
+                            }
+                            else
+                            {
+                                newGroup.addVEdgeCount(rel.getCardinality());
+                            }
+                            newGroup.setEdgeCount(rel.getCardinality());
+                            candidate = null;
+                        }
+                        else
+                        {
+                            candidate = candidate.getParent();
+                        }
                     }
 
-                    if (neighbours.containsKey(candidate))
+                    if (candidate != null)
                     {
                         if (neighbours.containsKey(candidate))
                         {
