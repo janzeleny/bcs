@@ -462,6 +462,15 @@ public class AreaProcessor2
         group.setHEdgeCount(horiz);
         group.setMeanDistance(m);
 
+
+        this.mergeChildren(group, a);
+        this.mergeChildren(group, b);
+
+        return group;
+    }
+
+    private void mergeChildren(PageArea group, PageArea a)
+    {
         if (a.getChildren().size() > 0)
         {
             for (PageArea child: a.getChildren())
@@ -473,20 +482,6 @@ public class AreaProcessor2
         {
             group.addChild(a);
         }
-
-        if (b.getChildren().size() > 0)
-        {
-            for (PageArea child: b.getChildren())
-            {
-                group.addChild(child);
-            }
-        }
-        else
-        {
-            group.addChild(b);
-        }
-
-        return group;
     }
 
     private void reclaim(PageArea a)
