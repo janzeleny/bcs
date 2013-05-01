@@ -617,11 +617,9 @@ public class AreaProcessor2
     private ArrayList<PageAreaRelation> getAreaGraph(List<PageArea> areas)
     {
         ArrayList<PageAreaRelation> relations = new ArrayList<PageAreaRelation>();
-        PageAreaRelation rel;
-        PageArea a, b;
+        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
+        PageArea a;
         Rectangle selector;
-        AreaMatch match;
-        double similarity;
 
 
         for (int i = 0; i < areas.size(); i++)
@@ -629,35 +627,50 @@ public class AreaProcessor2
             a = areas.get(i);
             /* First go right */
             selector = new Rectangle(a.getLeft(), a.getTop(), this.pageWidth, a.getBottom());
-            match = new AreaMatch();
-            this.areaTree.intersects(selector, match);
-            for (Integer index: match.getIds())
-            {
-                b = areas.get(index);
-                if (a == b) continue;
-                similarity = a.getSimilarity(b);
-                rel = new PageAreaRelation(a, b, similarity, PageAreaRelation.DIRECTION_HORIZONTAL);
-                relations.add(rel);
-            }
+            tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_HORIZONTAL);
+            this.processRelations(tmpRelations, relations, true);
 
             /* Now go down */
             selector = new Rectangle(a.getLeft(), a.getTop(), a.getRight(), this.pageHeight);
-            match = new AreaMatch();
-            this.areaTree.intersects(selector, match);
-            for (Integer index: match.getIds())
-            {
-                b = areas.get(index);
-                if (a == b) continue;
-                similarity = a.getSimilarity(b);
-                rel = new PageAreaRelation(a, b, similarity, PageAreaRelation.DIRECTION_VERTICAL);
-                relations.add(rel);
-            }
-
+            tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_VERTICAL);
+            this.processRelations(tmpRelations, relations, true);
         }
 
         Collections.sort(relations, new AreaSimilarityComparator());
 
         return relations;
+    }
+
+    private ArrayList<PageAreaRelation> findRelations(ArrayList<PageAreaRelation> relations, PageArea area, Rectangle selector, int direction)
+    {
+        AreaMatch match;
+        PageArea b;
+        double similarity;
+        PageAreaRelation rel;
+        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
+
+        match = new AreaMatch();
+        this.areaTree.intersects(selector, match);
+        for (Integer index: match.getIds())
+        {
+            b = areas.get(index);
+            if (area == b) continue;
+            similarity = area.getSimilarity(b);
+            rel = new PageAreaRelation(area, b, similarity, direction);
+            rel.setAbsoluteDistance(area.getDistanceAbsolute(b));
+            tmpRelations.add(rel);
+        }
+
+        return tmpRelations;
+    }
+
+    private void processRelations(ArrayList<PageAreaRelation> batch, ArrayList<PageAreaRelation> all, boolean append)
+    {
+        if (batch.size() > 0)
+        {
+            if (append) all.addAll(batch);
+            batch.clear();
+        }
     }
 
     public ArrayList<PageArea> getUngrouped()
