@@ -5,6 +5,7 @@ public class PageAreaRelation
     private PageArea a;
     private PageArea b;
     private double similarity;
+    private int absoluteDistance;
 
     private int direction;
 
@@ -75,6 +76,16 @@ public class PageAreaRelation
     public void addCardinality(int cardinality)
     {
         this.cardinality += cardinality;
+    }
+
+    public int getAbsoluteDistance()
+    {
+        return absoluteDistance;
+    }
+
+    public void setAbsoluteDistance(int absoluteDistance)
+    {
+        this.absoluteDistance = absoluteDistance;
     }
 
     @Override
