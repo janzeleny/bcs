@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -14,7 +13,9 @@ import javax.imageio.ImageIO;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
-import org.fit.cssbox.demo.DOMSource;
+import org.fit.cssbox.io.DefaultDOMSource;
+import org.fit.cssbox.io.DefaultDocumentSource;
+import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -25,14 +26,14 @@ public class Main
 
     private static DOMAnalyzer renderPage(URL url) throws Exception, IOException, SAXException
     {
-        InputStream is;
         URLConnection con;
+        DocumentSource docSource;
 
         con = url.openConnection();
-        is = con.getInputStream();
         url = con.getURL(); /* Store this (possible redirect happened) */
+        docSource = new DefaultDocumentSource(url);
 
-        DOMSource parser = new DOMSource(is);
+        DefaultDOMSource parser = new DefaultDOMSource(docSource);
         parser.setContentType(con.getHeaderField("Content-Type"));
         Document doc = parser.parse(); //doc represents the obtained DOM
 
@@ -94,6 +95,7 @@ public class Main
 
         if (args.length < 1) return;
         urlString = args[0];
+        System.out.println(urlString);
         imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-").replaceAll("\\?.*", "");
         url = new URL(urlString);
 
