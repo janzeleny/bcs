@@ -2,6 +2,9 @@ package org.fit.pis;
 
 import gnu.trove.TIntProcedure;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,8 +67,6 @@ class AreaMatch implements TIntProcedure
     }
 };
 
-
-
 public class AreaProcessor2
 {
     private final ArrayList<PageArea> areas;
@@ -83,7 +84,9 @@ public class AreaProcessor2
 
     private final StopWatch time;
 
-    public AreaProcessor2(ArrayList<PageArea> areas, int width, int height)
+    private BufferedWriter log;
+
+    public AreaProcessor2(ArrayList<PageArea> areas, int width, int height) throws IOException
     {
         Collections.sort(areas, new AreaSizeComparator());
         /* Note: we store only leaf areas */
@@ -171,6 +174,10 @@ public class AreaProcessor2
         ArrayList<PageAreaRelation> relations;
         ArrayList<PageArea> ret = new ArrayList<PageArea>();
 
+//        FileWriter fstream = new FileWriter("/home/greengo/out.txt");
+        FileWriter fstream = new FileWriter("/dev/null");
+        this.log = new BufferedWriter(fstream);
+
         relations = this.getAreaGraph(areas);
         this.locateGroups(relations);
 
@@ -187,6 +194,7 @@ public class AreaProcessor2
                 this.ungrouped.add(area);
             }
         }
+        this.log.close();
 
         return ret;
     }
@@ -217,6 +225,8 @@ public class AreaProcessor2
 
             if (relations.size() == 0 && a.getParent() == null && b.getParent() == null) break;
 
+            this.log.write(relation.toString()+"\n");
+
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
             vsum = v1 + v2;
@@ -228,7 +238,15 @@ public class AreaProcessor2
             mergeTest = this.mergeTest(relation);
             if (similarity > threshold || !mergeTest)
             {
-                if (similarity <= threshold && !mergeTest) mtRelations.add(relation);
+                if (similarity <= threshold && !mergeTest)
+                {
+                    this.log.write("Merge attempt failed\n");
+                    mtRelations.add(relation);
+                }
+                else if (similarity >= threshold)
+                {
+                    this.log.write("Similarity comparison failed: "+similarity+" >= "+threshold+"\n");
+                }
                 if (relations.size() == 0 && mtRelations.size() < relCnt)
                 {
                     relations.addAll(mtRelations);
@@ -239,6 +257,7 @@ public class AreaProcessor2
             }
 
             group = this.mergeAreas(a, b, relation);
+            this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
 
 
             do {
@@ -249,9 +268,11 @@ public class AreaProcessor2
 
                 if (area_overlap)
                 {
+                    this.log.write("overlap = true; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
                     /* First try to include all those overlapping areas in the group */
                     if (!this.growGroup(group, match.getIds()))
                     {
+                        this.log.write("group grow failed\n");
                         this.reclaim(a);
                         this.reclaim(b);
                         this.returnChildren(group);
@@ -260,6 +281,7 @@ public class AreaProcessor2
                     else
                     {
                         vsum = group.getChildren().size();
+                        this.log.write("updated vsum: " + vsum+"\n");
                     }
                 }
             } while (area_overlap);
@@ -267,6 +289,7 @@ public class AreaProcessor2
             if (!area_overlap)
             {
                 /* Now we have to add children completely */
+                this.log.write("Final Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
                 this.transferRelations(a, b, group, relations);
                 this.groups.remove(a);
                 this.groups.remove(b);
@@ -373,16 +396,18 @@ public class AreaProcessor2
             {
                 index = copy.get(i);
                 area = this.areas.get(index);
+                this.log.write("area test for merge: "+area.toString());
                 if (area.getParent() == group)
                 {
                     copy.remove(i);
+                    this.log.write(" (already in the group)\n");
                     i--;
                     continue;
                 }
                 else if (area.getParent() != null)
                 {
                     /* This belongs to another group - that's a show stopper */
-
+                    this.log.write(" (belongs to another group)\n");
                     return false;
                 }
                 else
@@ -555,6 +580,7 @@ public class AreaProcessor2
 
             if (candidate != null)
             {
+                this.log.write("Selected candidate: "+candidate.toString()+"\n");
                 /* Just to be sure, test the candidate for both old groups
                  * (code above can change in the future) */
                 if (candidate != oldGroup1 && candidate != oldGroup2)
@@ -562,8 +588,10 @@ public class AreaProcessor2
                     /* Again, just in case ... */
                     if (candidate.getParent() != null)
                     {
+                        this.log.write("parent is not null\n");
                         if (candidate.getParent() == newGroup)
                         {
+                            this.log.write("parent is the new group\n");
                             if (rel.getDirection() == PageAreaRelation.DIRECTION_HORIZONTAL)
                             {
                                 newGroup.addHEdgeCount(rel.getCardinality());
@@ -583,6 +611,7 @@ public class AreaProcessor2
 
                     if (candidate != null)
                     {
+                        this.log.write("candidate is not null\n");
                         if (neighbours.containsKey(candidate))
                         {
                             bestRel = neighbours.get(candidate);
@@ -598,6 +627,7 @@ public class AreaProcessor2
                             bestRel.setCardinality(rel.getCardinality());
                             neighbours.put(candidate, bestRel);
                         }
+                        this.log.write("remove "+candidate.toString()+"\n");
                     }
                 }
 

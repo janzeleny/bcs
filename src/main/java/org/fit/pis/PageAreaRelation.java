@@ -76,4 +76,10 @@ public class PageAreaRelation
     {
         this.cardinality += cardinality;
     }
+
+    @Override
+    public String toString()
+    {
+        return "Relation: "+this.getAbsoluteDistance()+"-"+this.getSimilarity()+"-"+this.a.toString()+"-"+this.b.toString();
+    }
 }

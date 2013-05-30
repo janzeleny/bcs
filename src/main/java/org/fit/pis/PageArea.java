@@ -152,6 +152,12 @@ public class PageArea
         return this.bottom - this.top + 1;
     }
 
+    @Override
+    public String toString()
+    {
+        return "("+this.getTop()+","+this.getLeft()+"-"+this.getWidth()+"x"+this.getHeight()+")";
+    }
+
     public void addChild(PageArea child)
     {
         this.addChild(child, false);
