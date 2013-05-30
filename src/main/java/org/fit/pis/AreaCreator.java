@@ -281,6 +281,8 @@ public class AreaCreator
         if (hsb[hsb_index] > 1.0) hsb[hsb_index] = (float)1.0;
         else if (hsb[hsb_index] < 0.0) hsb[hsb_index] = (float)0.0;
 
+        if (!this.onPage(pos.x, pos.y, pos.width, pos.height)) return;
+
         area = new PageArea(new Color(Color.HSBtoRGB(hsb[0], hsb[1], hsb[2])),
                             pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
         this.areas.add(area);
@@ -294,7 +296,7 @@ public class AreaCreator
         ContentImage imgObj = (ContentImage)box.getContentObj();
 
         avg = new AverageColor(imgObj.getBufferedImage());
-        if (avg.getColor() == null) return;
+        if (avg.getColor() == null || !this.onPage(pos.x, pos.y, pos.width, pos.height)) return;
 
         area = new PageArea(avg.getColor(), pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
         this.areas.add(area);
@@ -313,7 +315,7 @@ public class AreaCreator
         r = rect.x+rect.width;
         b = rect.y+rect.height;
 
-        if (l > this.pageWidth || t > this.pageHeight || r < 0 || b < 0) return;
+        if (l > this.pageWidth || t > this.pageHeight || !this.onPage(l, t, rect.width, rect.height)) return;
 
         c = this.getBgColor(box, parentBg);
         if (c != null)
@@ -321,5 +323,13 @@ public class AreaCreator
             area = new PageArea(c, l, t, r, b);
             this.areas.add(area);
         }
+    }
+
+    private boolean onPage(int x, int y, int w, int h)
+    {
+        if (x > this.pageWidth || y > this.pageHeight) return false;
+        if (w == 0 || h == 0) return false;
+        if (x+w < 0 || y+h < 0) return false;
+        return true;
     }
 }
