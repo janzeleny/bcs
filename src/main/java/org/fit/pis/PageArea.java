@@ -280,15 +280,18 @@ public class PageArea
     {
         int surface1, surface2;
         double ratio1, ratio2;
+        double ratioMin, ratioMax;
         double ratioSimilarity;
         double surfaceSimilarity;
 
         ratio1 = (double)this.getWidth()/this.getHeight();
         ratio2 = (double)a.getWidth()/a.getHeight();
+        ratioMin = Math.min(ratio1, ratio2);
+        ratioMax = Math.max(ratio1, ratio2);
         surface1 = this.getWidth()*this.getHeight();
         surface2 = a.getWidth()*a.getHeight();
 
-        ratioSimilarity = (ratio1-ratio2)/((ratio1*ratio1-1)/ratio1);
+        ratioSimilarity = (ratioMax-ratioMin)/((ratioMax*ratioMax-1)/ratioMax);
         surfaceSimilarity = 1-Math.min(surface1, surface2)/Math.max(surface1, surface2);
 
         return (ratioSimilarity+surfaceSimilarity)/2;
