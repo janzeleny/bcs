@@ -174,7 +174,7 @@ public class AreaProcessor2
     private void locateGroups(ArrayList<PageAreaRelation> relations) throws Exception
     {
         PageArea a, b;
-        int v1, v2, vsum;
+        int v1, v2, vsum, groupCnt;
         PageAreaRelation relation;
         PageArea group;
         boolean area_overlap;
@@ -202,6 +202,7 @@ public class AreaProcessor2
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
             vsum = v1 + v2;
+            groupCnt = (a.getChildren().size()==0?0:1)+(b.getChildren().size()==0?0:1);
 
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
 //            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
@@ -229,8 +230,19 @@ public class AreaProcessor2
             }
 
             group = this.mergeAreas(a, b, relation);
+            mergeCandidates.clear();
             this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+") - ("+v1+", "+v2+")\n");
 
+            match = new AreaMatch();
+            this.groupTree.intersects(group.getRectangle(), match);
+            /* It will always overlap with the two areas already in the group */
+            if (match.getIds().size() > groupCnt)
+            {
+                this.reclaim(a);
+                this.reclaim(b);
+                this.returnChildren(group);
+                continue;
+            }
 
             do {
                 match = new AreaMatch();
