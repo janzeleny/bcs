@@ -183,6 +183,7 @@ public class AreaProcessor2
         double similarity;
         int relCnt = relations.size();
         ArrayList<PageAreaRelation> mtRelations = new ArrayList<PageAreaRelation>();
+        ArrayList<PageArea> mergeCandidates = new ArrayList<PageArea>();
         boolean mergeTest;
 
         this.time.toggle();
@@ -254,7 +255,7 @@ public class AreaProcessor2
                 {
                     this.log.write("overlap = true; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
                     /* First try to include all those overlapping areas in the group */
-                    if (!this.growGroup(group, match.getIds()))
+                    if (!this.growGroup(group, match.getIds(), mergeCandidates))
                     {
                         this.log.write("group grow failed\n");
                         this.reclaim(a);
@@ -264,8 +265,29 @@ public class AreaProcessor2
                     }
                     else
                     {
-                        vsum = group.getChildren().size();
+                        vsum = group.getChildren().size()+mergeCandidates.size();
                         this.log.write("updated vsum: " + vsum+"\n");
+                    }
+                }
+                else
+                {
+                    this.log.write("overlap = false; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
+                    if (mergeCandidates.size() > 0)
+                    {
+                        /* The group can't be expanded more by overlapping children,
+                         * try to merge those areas that might be somewhere in between them */
+                        this.log.write("trying to merge group "+group.toString()+" and "+mergeCandidates.size()+" candidates\n");
+                        if (!this.tryMerge(group, mergeCandidates))
+                        {
+                            this.log.write("merging failed\n");
+                            this.reclaim(a);
+                            this.reclaim(b);
+                            this.returnChildren(group);
+                            area_overlap = true; /* Need to set this for the condition below */
+                            break;
+                        }
+                        mergeCandidates.clear();
+                        area_overlap = true; /* Need to set this for the condition below */
                     }
                 }
             } while (area_overlap);
@@ -294,13 +316,17 @@ public class AreaProcessor2
         System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
     }
 
-    private boolean growGroup(PageArea group, ArrayList<Integer> areas)
+    private boolean growGroup(PageArea group, ArrayList<Integer> matches, ArrayList<PageArea> mergeCandidates) throws IOException
     {
         boolean merged = true;
-        ArrayList<Integer> copy = new ArrayList<Integer>();
-        copy.addAll(areas);
         PageArea area;
-        Integer index;
+        ArrayList<PageArea> areas = new ArrayList<PageArea>();
+        for (Integer i: matches)
+        {
+            areas.add(this.areas.get(i));
+        }
+        Collections.sort(areas, new AreaSizeComparator());
+        Collections.reverse(areas);
 
         /* At the first pass, allow growing group only for areas that are
          * actually bordering/overlapping with different areas in the group */
@@ -310,15 +336,14 @@ public class AreaProcessor2
         while (merged)
         {
             merged = false;
-            for (int i = 0 ; i < copy.size() ; i++)
+            for (int i = 0 ; i < areas.size() ; i++)
             {
-                index = copy.get(i);
-                area = this.areas.get(index);
+                area = areas.get(i);
                 this.log.write("area test for merge: "+area.toString());
                 if (area.getParent() == group)
                 {
-                    copy.remove(i);
                     this.log.write(" (already in the group)\n");
+                    areas.remove(i);
                     i--;
                     continue;
                 }
@@ -343,18 +368,92 @@ public class AreaProcessor2
 
                     if (merged == true)
                     {
-                        copy.remove(i);
+                        areas.remove(i);
                         i--;
                         break;
+                    }
+                    else
+                    {
+                        if (!mergeCandidates.contains(area))
+                        {
+                            mergeCandidates.add(area);
+                        }
+                        this.log.write(" (not merged)\n");
                     }
                 }
             }
         }
 
-        if (copy.size() > 0)
+        return true;
+    }
+
+    private boolean tryMerge(PageArea group, ArrayList<PageArea> areas) throws IOException
+    {
+        PageArea tmpArea;
+        PageArea mark;
+        PageArea tmpGroup = new PageArea(group);
+        AreaMatch match;
+        int matchCnt = 0;
+        int candidateCnt = areas.size();
+        boolean merge;
+        ArrayList<PageArea> mergeList = new ArrayList<PageArea>();
+
+        for (PageArea area: areas)
         {
-            /* There are some areas that don't overlap with areas in the group */
-            return false;
+            this.log.write("candidate: "+area.toString());
+            mark = new PageArea(tmpGroup);
+            tmpGroup.addChild(area, true);
+            if (group.contains(tmpGroup))
+            {
+                /* The new area doesn't make the group expand - it can be added */
+                this.log.write(" is within the group\n");
+                group.addChild(area);
+                candidateCnt--;
+            }
+            else
+            {
+                match = new AreaMatch();
+                tmpGroup.resetRectangle();
+                this.areaTree.intersects(tmpGroup.getRectangle(), match);
+                matchCnt = match.getIds().size();
+                if (matchCnt > group.getChildren().size()+candidateCnt)
+                {
+                    merge = false;
+                    for (Integer i: match.getIds())
+                    {
+                        tmpArea = this.areas.get(i);
+                        if (group.getChildren().contains(tmpArea)) continue;
+                        if (areas.contains(tmpArea)) continue;
+                        if (tmpArea.getDistanceAbsolute(mark) <= 1)
+                        {
+                            mergeList.add(area);
+                            this.log.write(" brings new adjacent box\n");
+                            merge = true;
+                            break;
+                        }
+                    }
+
+                    if (!merge)
+                    {
+                        this.log.write(" would bring more boxes to the group\n");
+                        return false;
+                    }
+                }
+                else
+                {
+                    /* Adding the area to the group extended the group but
+                     * it didn't bring in any new areas */
+                    this.log.write(" expands the group but can be included\n");
+                    group.addChild(area);
+                    candidateCnt--;
+                }
+            }
+        }
+
+        for (PageArea a: mergeList)
+        {
+            this.log.write("merging "+a.toString()+"\n");
+            group.addChild(a);
         }
 
         return true;
