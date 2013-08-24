@@ -296,6 +296,7 @@ public class AreaProcessor2
             {
                 /* Now we have to add children completely */
                 this.log.write("Final Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
+                this.transferNeighbors(a, b, group);
                 this.transferRelations(a, b, group, relations);
                 this.groups.remove(a);
                 this.groups.remove(b);
@@ -763,6 +764,55 @@ public class AreaProcessor2
 
         Collections.sort(relations, new RelationComparator());
     }
+
+    private void transferNeighbors(PageArea oldGroup1, PageArea oldGroup2, PageArea newGroup)
+    {
+        PageArea area;
+        PageAreaRelation rel;
+        ArrayList<PageArea> delList = new ArrayList<PageArea>();
+        HashMap<PageArea, Integer> recalc = new HashMap<PageArea, Integer>();
+        /* children is a hash tab giving information about
+         * which areas are children of the group
+         * (those should not be added as neighBors of the new group)
+         */
+        HashMap<PageArea, Integer> children = new HashMap<PageArea, Integer>();
+        for (PageArea child: newGroup.getChildren())
+        {
+            children.put(child, 0);
+        }
+        children.put(oldGroup1, 0);
+        children.put(oldGroup2, 0);
+
+        for (PageArea a: newGroup.getChildren())
+        {
+            delList.clear();
+            /* We can also inspect children of the merged groups - they don't have any neighbors */
+            for (Map.Entry<PageArea, PageAreaRelation> entry : a.getNeighbors().entrySet())
+            {
+                area = entry.getKey();
+                rel = entry.getValue();
+                delList.add(area);
+                recalc.put(area, 0);
+                if (!children.containsKey(area))
+                {
+                    newGroup.addNeighbor(area, rel.getDirection(), rel.getCardinality());
+                }
+            }
+
+            for (PageArea del: delList)
+            {
+                del.delNeighbor(a);
+            }
+        }
+
+
+        newGroup.calculateNeighborDistances();
+        for (PageArea a: recalc.keySet())
+        {
+            a.calculateNeighborDistances();
+        }
+    }
+
 
     private ArrayList<PageAreaRelation> getAreaGraph(List<PageArea> areas)
     {
