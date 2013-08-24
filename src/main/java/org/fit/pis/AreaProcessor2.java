@@ -80,10 +80,11 @@ public class AreaProcessor2
 
     private void buildHierarchy(ArrayList<PageArea> areas)
     {
-        @SuppressWarnings("unchecked")
-        ArrayList<PageArea> pool = (ArrayList<PageArea>) areas.clone();
+        ArrayList<PageArea> pool = new ArrayList<PageArea>();
         ArrayList<PageArea> deleteList = new ArrayList<PageArea>();
 
+        pool.addAll(areas);
+        Collections.sort(pool, new AreaSizeComparator());
         for (PageArea area: areas) // this can't be pool, because we will modify it in the loop
         {
             for (PageArea a: deleteList)
@@ -111,17 +112,17 @@ public class AreaProcessor2
 
     private void extractLeafAreas(ArrayList<PageArea> areas)
     {
-        PageArea parent;
-
+        this.areas.clear();
         for (PageArea a: areas)
         {
             if (a.getChildren().size() == 0)
             {
-                parent = a;
-                parent.setParent(null);
-                parent.getChildren().clear();
-                this.areas.add(parent);
-                this.areaTree.add(parent.getRectangle(), this.areas.size()-1);
+                a.setParent(null);
+                a.getChildren().clear();
+//                if (a.getTop() < 180)
+//                    System.out.println("areas.add(new PageArea(Color.black,"+a.getLeft()+","+a.getTop()+","+a.getRight()+","+a.getBottom()+"));");
+                this.areas.add(a);
+                this.areaTree.add(a.getRectangle(), this.areas.size()-1);
             }
         }
     }
@@ -228,7 +229,7 @@ public class AreaProcessor2
             }
 
             group = this.mergeAreas(a, b, relation);
-            this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
+            this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+") - ("+v1+", "+v2+")\n");
 
 
             do {
@@ -281,72 +282,6 @@ public class AreaProcessor2
         System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
     }
 
-    private int getAreaCount(PageArea a)
-    {
-        if (a.getChildren().size() > 0)
-        {
-            return a.getChildren().size();
-        }
-        else
-        {
-            return 1;
-        }
-    }
-
-    private boolean mergeTest(PageAreaRelation rel)
-    {
-        PageArea a, b;
-        int direction;
-        int aShape, bShape;
-
-        a = rel.getA();
-        b = rel.getB();
-        direction = rel.getDirection();
-
-        aShape = a.getShape();
-        bShape = b.getShape();
-
-        if (direction == PageAreaRelation.DIRECTION_HORIZONTAL)
-        {
-            if (aShape == bShape)
-            {
-                if (aShape == PageArea.SHAPE_COLUMN) return false;
-                else return true;
-            }
-            else
-            {
-                return this.mergeTestAlignment(a, b);
-            }
-        }
-        else
-        {
-            if (aShape == bShape)
-            {
-                if (aShape == PageArea.SHAPE_ROW) return false;
-                else return true;
-            }
-            else
-            {
-                return this.mergeTestAlignment(a, b);
-            }
-        }
-    }
-
-    private boolean mergeTestAlignment(PageArea a, PageArea b)
-    {
-        PageArea tmpArea;
-        AreaMatch match;
-        int areaCnt;
-
-        tmpArea = new PageArea(a);
-        tmpArea.addChild(b, true);
-        areaCnt = this.getAreaCount(a)+this.getAreaCount(b);
-
-        match = new AreaMatch();
-        this.areaTree.intersects(tmpArea.getRectangle(), match);
-        return (match.getIds().size() <= areaCnt);
-    }
-
     private boolean growGroup(PageArea group, ArrayList<Integer> areas)
     {
         boolean merged = true;
@@ -389,9 +324,11 @@ public class AreaProcessor2
                         {
                             merged = true;
                             group.addChild(area);
+                            this.log.write(" (merged - overlap)\n");
                             break;
                         }
                     }
+
                     if (merged == true)
                     {
                         copy.remove(i);
@@ -526,13 +463,76 @@ public class AreaProcessor2
         return (e1*m1+(v1-1)*v2*m1 + v1*v2*x + v1*(v2-1)*m2+e2*m2)/(e1+v1*v2+e2);
     }
 
-    private void transferRelations(PageArea oldGroup1, PageArea oldGroup2, PageArea newGroup, List<PageAreaRelation> relations)
+    private int getAreaCount(PageArea a)
+    {
+        if (a.getChildren().size() > 0)
+        {
+            return a.getChildren().size();
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    private boolean mergeTest(PageAreaRelation rel)
+    {
+        PageArea a, b;
+        int direction;
+        int aShape, bShape;
+
+        a = rel.getA();
+        b = rel.getB();
+        direction = rel.getDirection();
+
+        aShape = a.getShape();
+        bShape = b.getShape();
+
+        if (direction == PageAreaRelation.DIRECTION_HORIZONTAL)
+        {
+            if (aShape == bShape)
+            {
+            }
+            else
+            {
+                return this.mergeTestAlignment(a, b);
+            }
+        }
+        else
+        {
+            if (aShape == bShape)
+            {
+            }
+            else
+            {
+                return this.mergeTestAlignment(a, b);
+            }
+        }
+    }
+
+    private boolean mergeTestAlignment(PageArea a, PageArea b)
+    {
+        PageArea tmpArea;
+        AreaMatch match;
+        int areaCnt;
+
+        tmpArea = new PageArea(a);
+        tmpArea.addChild(b, true);
+        areaCnt = this.getAreaCount(a)+this.getAreaCount(b);
+
+        match = new AreaMatch();
+        this.areaTree.intersects(tmpArea.getRectangle(), match);
+        return (match.getIds().size() <= areaCnt);
+    }
+
+
+    private void transferRelations(PageArea oldGroup1, PageArea oldGroup2, PageArea newGroup, List<PageAreaRelation> relations) throws IOException
     {
         int i;
         PageAreaRelation rel;
         PageAreaRelation bestRel;
         PageArea candidate;
-        HashMap<PageArea, PageAreaRelation> neighbours = new HashMap<PageArea, PageAreaRelation>();
+        HashMap<PageArea, PageAreaRelation> tmpRelations = new HashMap<PageArea, PageAreaRelation>();
 
         for (i = 0; i < relations.size(); i++)
         {
@@ -583,9 +583,9 @@ public class AreaProcessor2
                     if (candidate != null)
                     {
                         this.log.write("candidate is not null\n");
-                        if (neighbours.containsKey(candidate))
+                        if (tmpRelations.containsKey(candidate))
                         {
-                            bestRel = neighbours.get(candidate);
+                            bestRel = tmpRelations.get(candidate);
                             bestRel.addCardinality(rel.getCardinality());
                             if (rel.getSimilarity() < bestRel.getSimilarity())
                             {
@@ -596,18 +596,17 @@ public class AreaProcessor2
                         {
                             bestRel = new PageAreaRelation(newGroup, candidate, rel.getSimilarity(), rel.getDirection());
                             bestRel.setCardinality(rel.getCardinality());
-                            neighbours.put(candidate, bestRel);
+                            tmpRelations.put(candidate, bestRel);
                         }
                         this.log.write("remove "+candidate.toString()+"\n");
+                        relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
+                        i--; // since we removed the relation, we need to scan the one that took its place
                     }
                 }
-
-                relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
-                i--; // since we removed the relation, we need to scan the one that took its place
             }
         }
 
-        for (Map.Entry<PageArea, PageAreaRelation> entry : neighbours.entrySet())
+        for (Map.Entry<PageArea, PageAreaRelation> entry : tmpRelations.entrySet())
         {
             relations.add(entry.getValue());
         }
