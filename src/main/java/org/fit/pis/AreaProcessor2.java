@@ -47,7 +47,7 @@ public class AreaProcessor2
     private final HashSet<PageArea> groups;
     private final ArrayList<PageArea> ungrouped;
 
-    public static final double similarityThreshold = 0.1;
+    public static final double similarityThreshold = 0.2;
 
     private final int pageWidth;
     private final int pageHeight;
@@ -818,8 +818,9 @@ public class AreaProcessor2
     {
         ArrayList<PageAreaRelation> relations = new ArrayList<PageAreaRelation>();
         ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
-        PageArea a;
+        PageArea a, b;
         Rectangle selector;
+        double similarity;
 
 
         for (int i = 0; i < areas.size(); i++)
@@ -834,9 +835,47 @@ public class AreaProcessor2
             selector = new Rectangle(a.getLeft(), a.getTop(), a.getRight(), this.pageHeight);
             tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_VERTICAL);
             this.processRelations(tmpRelations, relations, true);
+
+            /* DOC: Now just to be sure, go up and left, but don't add those into the global list, as we already have them */
+            /* First left */
+            selector = new Rectangle(0, a.getTop(), a.getRight(), a.getBottom());
+            tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_HORIZONTAL);
+            this.processRelations(tmpRelations, relations, false);
+
+            /* And finally up */
+            selector = new Rectangle(a.getLeft(), 0, a.getRight(), a.getBottom());
+            tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_VERTICAL);
+            this.processRelations(tmpRelations, relations, false);
         }
 
-        Collections.sort(relations, new AreaSimilarityComparator());
+        for (PageArea area: areas)
+        {
+            area.calculateNeighborDistances();
+        }
+
+        /* DOC: we need to compute distance now because we didn't know
+         * all the absolute distances before
+         */
+        for (PageAreaRelation rel: relations)
+        {
+            a = rel.getA();
+            b = rel.getB();
+            similarity = a.getSimilarity(b);
+            rel.setSimilarity(similarity);
+        }
+
+        Collections.sort(relations, new RelationComparator());
+
+        /* DOC: we need to compute distance now because we didn't know
+         * all the absolute distances before
+         */
+//        for (PageAreaRelation rel: relations)
+//        {
+//            a = rel.getA();
+//            b = rel.getB();
+//            similarity = a.getSimilarity(b);
+//            rel.setSimilarity(similarity);
+//        }
 
         return relations;
     }
@@ -845,7 +884,6 @@ public class AreaProcessor2
     {
         AreaMatch match;
         PageArea b;
-        double similarity;
         PageAreaRelation rel;
         ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
 
@@ -855,8 +893,7 @@ public class AreaProcessor2
         {
             b = areas.get(index);
             if (area == b) continue;
-            similarity = area.getSimilarity(b);
-            rel = new PageAreaRelation(area, b, similarity, direction);
+            rel = new PageAreaRelation(area, b, 1.0, direction);
             rel.setAbsoluteDistance(area.getDistanceAbsolute(b));
             tmpRelations.add(rel);
         }
@@ -866,8 +903,25 @@ public class AreaProcessor2
 
     private void processRelations(ArrayList<PageAreaRelation> batch, ArrayList<PageAreaRelation> all, boolean append)
     {
+        double distMark;
+
         if (batch.size() > 0)
         {
+            Collections.sort(batch, new AreaProximityComparator());
+            /* DOC: more boxes can have the same distance */
+            distMark = batch.get(0).getAbsoluteDistance();
+            for (PageAreaRelation r: batch)
+            {
+                if (r.getAbsoluteDistance() <= distMark)
+                {
+                    r.getA().addNeighbor(r);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
             if (append) all.addAll(batch);
             batch.clear();
         }

@@ -2,7 +2,9 @@ package org.fit.pis;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.infomatiq.jsi.Rectangle;
 
@@ -16,11 +18,16 @@ public class PageArea
 
     private PageArea parent;
     private final ArrayList<PageArea> children;
+    private final HashMap<PageArea, PageAreaRelation> neighbors;
+    /* This is a mean of neighbor distances */
+    private int meanNeighborDistance;
+    private int maxNeighborDistance;
 
     private Rectangle rectangle;
     private int edgeCount;
     private int vEdgeCount;
     private int hEdgeCount;
+    /* This is a mean distance within a group */
     private double meanDistance;
 
     public static final int ALIGNMENT_NONE = 0;
@@ -43,6 +50,9 @@ public class PageArea
         this.right = r;
         this.bottom = b;
         this.children = new ArrayList<PageArea>();
+        this.neighbors = new HashMap<PageArea, PageAreaRelation>();
+        this.maxNeighborDistance = 0;
+        this.meanNeighborDistance = 0;
         this.rectangle = null;
         this.edgeCount = 0;
         this.vEdgeCount = 0;
@@ -67,6 +77,9 @@ public class PageArea
         this.hEdgeCount = a.hEdgeCount;
         this.meanDistance = a.meanDistance;
         this.children = new ArrayList<PageArea>();
+        this.neighbors = new HashMap<PageArea, PageAreaRelation>();
+        this.maxNeighborDistance = 0;
+        this.meanNeighborDistance = 0;
 
         if (inheritChildren)
         {
@@ -205,6 +218,108 @@ public class PageArea
         return this.parent;
     }
 
+    public HashMap<PageArea, PageAreaRelation> getNeighbors()
+    {
+        return this.neighbors;
+    }
+
+    public PageAreaRelation getNeighbor(PageArea a)
+    {
+        return this.neighbors.get(a);
+    }
+
+    public void addNeighbor(PageArea a, int direction, int cardinality)
+    {
+        PageAreaRelation neighbor;
+        int distance;
+
+        distance = this.getDistanceAbsolute(a);
+
+        if (this.neighbors.containsKey(a))
+        {
+            neighbor = this.neighbors.get(a);
+            if (distance < neighbor.getSimilarity())
+            {
+                neighbor.setSimilarity(distance);
+                neighbor.setAbsoluteDistance(distance);
+                neighbor.setCardinality(neighbor.getCardinality()+cardinality);
+            }
+        }
+
+        neighbor = new PageAreaRelation(this, a, distance, direction);
+        neighbor.setCardinality(cardinality);
+        neighbor.setAbsoluteDistance(distance);
+
+        this.neighbors.put(a, neighbor);
+        a.neighbors.put(this, neighbor);
+    }
+
+    public void addNeighbor(PageAreaRelation rel)
+    {
+        PageArea a;
+        int distance;
+
+        if (rel.getA() == this) a = rel.getB();
+        else if (rel.getB() == this) a = rel.getA();
+        else return;
+
+        if (this.neighbors.containsKey(a)) return;
+
+        distance = this.getDistanceAbsolute(a);
+
+        PageAreaRelation neighbor = new PageAreaRelation(this, a, distance, rel.getDirection());
+        neighbor.setCardinality(rel.getCardinality());
+        neighbor.setAbsoluteDistance(distance);
+
+        this.neighbors.put(a, neighbor);
+        a.neighbors.put(this, neighbor);
+    }
+
+    public void delNeighbor(PageArea a)
+    {
+        PageAreaRelation rel = this.neighbors.get(a);
+
+        if (rel == null) return;
+
+        this.neighbors.remove(a);
+        a.neighbors.remove(this);
+    }
+
+    public int getMaxNeighborDistance()
+    {
+        return maxNeighborDistance;
+    }
+
+    public void setMaxNeighborDistance(int maxNeighborDistance)
+    {
+        this.maxNeighborDistance = maxNeighborDistance;
+    }
+
+    public int getMeanNeighborDistance()
+    {
+        return meanNeighborDistance;
+    }
+
+    public void setMeanNeighborDistance(int meanNeighborDistance)
+    {
+        this.meanNeighborDistance = meanNeighborDistance;
+    }
+
+    public void calculateNeighborDistances()
+    {
+        int cnt = 0, sum = 0, val;
+        this.maxNeighborDistance = 0;
+        for (Map.Entry<PageArea, PageAreaRelation> entry : this.neighbors.entrySet())
+        {
+            val = entry.getValue().getAbsoluteDistance();
+            if (val > this.maxNeighborDistance) this.maxNeighborDistance = val;
+            sum += val;
+            cnt++;
+        }
+
+        this.meanNeighborDistance = sum/((cnt!=0)?cnt:1);
+    }
+
     public double getSimilarityFromGraph(PageArea area, double x)
     {
         int v1, v2;
@@ -246,14 +361,19 @@ public class PageArea
     {
         double shape = getShapeSimilarity(a);
         double color = getColorSimilarity(a);
-        double position = getDistance(a);
+//        double position = getDistance(a);
+        double position = getDistanceNeighbor(a);
 
         if (position == 0.0)
         {
             return 0.0;
         }
+        else if (position == 1.0)
+        {
+            return 1.0;
+        }
 
-
+//        shape = 0;
         return (shape + color + position)/3;
     }
 
@@ -378,6 +498,41 @@ public class PageArea
         /* DOC: this formula will be important to document */
         return Math.sqrt(verticalDistance*verticalDistance+horizontalDistance*horizontalDistance)/
                Math.sqrt(width*width+height*height);
+    }
+
+    public double getDistanceNeighbor(PageArea a)
+    {
+        PageAreaRelation rel = this.neighbors.get(a);
+        double forward, backward;
+        double dist;
+
+        if (rel == null || this.maxNeighborDistance == 0 || a.maxNeighborDistance == 0) return 1.0;
+
+        if (this == a || this.overlaps(a)) return 0.0;
+
+        if (this.maxNeighborDistance == this.meanNeighborDistance ||
+            a.maxNeighborDistance == a.meanNeighborDistance) return 0.0;
+
+        dist = this.getDistanceAbsolute(a);
+        forward = dist/this.maxNeighborDistance;
+        backward = dist/a.maxNeighborDistance;
+        return (forward+backward)/2;
+    }
+
+    public int getDistanceAbsolute(PageArea a)
+    {
+        if (this == a || this.overlaps(a)) return 0;
+
+        if (this.left > a.right || a.left > this.right)
+        {
+            return Math.min(Math.abs(this.left-a.right), Math.abs(a.left-this.right));
+        }
+        else
+        {
+            return Math.min(Math.abs(this.top-a.bottom), Math.abs(a.top-this.bottom));
+            //  if (this.top > a.bottom || a.top > this.bottom)
+            // -> this condition is now implicit
+        }
     }
 
     public int getAlignment(PageArea a)
@@ -541,6 +696,11 @@ public class PageArea
         }
 
         return this.rectangle;
+    }
+
+    public void resetRectangle()
+    {
+        this.rectangle = null;
     }
 
     public int getEdgeCount()
