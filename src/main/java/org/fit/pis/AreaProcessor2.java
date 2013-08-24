@@ -492,6 +492,8 @@ public class AreaProcessor2
         {
             if (aShape == bShape)
             {
+                if (aShape == PageArea.SHAPE_COLUMN) return mergeTestDensity(a, b, aShape);
+                else return true;
             }
             else
             {
@@ -502,6 +504,8 @@ public class AreaProcessor2
         {
             if (aShape == bShape)
             {
+                if (aShape == PageArea.SHAPE_ROW) return mergeTestDensity(a, b, aShape);
+                else return true;
             }
             else
             {
@@ -525,6 +529,40 @@ public class AreaProcessor2
         return (match.getIds().size() <= areaCnt);
     }
 
+    private boolean mergeTestDensity(PageArea a, PageArea b, int shape)
+    {
+        double densA, densB;
+        double ratio;
+        int dimA, dimB;
+        int cntA, cntB;
+
+        if (shape == PageArea.SHAPE_ROW)
+        {
+            cntA = a.getVEdgeCount();
+            dimA = a.getHeight();
+            cntB = b.getVEdgeCount();
+            dimB = b.getHeight();
+        }
+        else if (shape == PageArea.SHAPE_COLUMN)
+        {
+            cntA = a.getHEdgeCount();
+            dimA = a.getWidth();
+            cntB = b.getHEdgeCount();
+            dimB = b.getWidth();
+        }
+        else
+        {
+            return false;
+        }
+
+        densA = (double)cntA / dimA;
+        densB = (double)cntB / dimB;
+
+        ratio = Math.min(densA, densB)/Math.max(densA, densB);
+//        if (ratio <= (double)1/3) return true;
+        if (ratio <= 0.5) return true;
+        else return false;
+    }
 
     private void transferRelations(PageArea oldGroup1, PageArea oldGroup2, PageArea newGroup, List<PageAreaRelation> relations) throws IOException
     {
