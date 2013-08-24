@@ -760,7 +760,8 @@ public class AreaProcessor2
             relations.add(entry.getValue());
         }
 
-        Collections.sort(relations, new AreaSimilarityComparator());
+
+        Collections.sort(relations, new RelationComparator());
     }
 
     private ArrayList<PageAreaRelation> getAreaGraph(List<PageArea> areas)
