@@ -38,6 +38,7 @@ class AreaMatch implements TIntProcedure
 
 public class AreaProcessor2
 {
+    private static final boolean DEBUG = true;
     private final ArrayList<PageArea> areas;
 
     private final SpatialIndex areaTree;
@@ -142,9 +143,10 @@ public class AreaProcessor2
     {
         ArrayList<PageAreaRelation> relations;
         ArrayList<PageArea> ret = new ArrayList<PageArea>();
+        FileWriter fstream;
 
-//        FileWriter fstream = new FileWriter("/home/greengo/out.txt");
-        FileWriter fstream = new FileWriter("/dev/null");
+        if (DEBUG) fstream = new FileWriter("/home/greengo/out.txt");
+        else fstream = new FileWriter("/dev/null");
         this.log = new BufferedWriter(fstream);
 
         relations = this.getAreaGraph(areas);
