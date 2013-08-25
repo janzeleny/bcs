@@ -82,6 +82,7 @@ public class PageImage
         float []bgHsb;
         int white_multiplier;
         int hsb_index;
+        int x, y;
         Rectangle pos = box.getAbsoluteContentBounds();
 
         color = box.getVisualContext().getColor();
@@ -94,7 +95,9 @@ public class PageImage
             {
                 /* The text is white, we want to get the color of background ... */
 
-                bgColor = new Color(this.img.getRGB(box.getContentX(), box.getContentY()));
+                x = (box.getContentX()<0)?0:box.getContentX();
+                y = (box.getContentY()<0)?0:box.getContentY();
+                bgColor = new Color(this.img.getRGB(x, y));
                 bgHsb = Color.RGBtoHSB(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), null);
                 hsb[0] = bgHsb[0];
 
@@ -222,6 +225,8 @@ public class PageImage
             { /* BG is transparent - detect current color on the image */
                 x = (rect.x >= 0)?rect.x:0;
                 y = (rect.y >= 0)?rect.y:0;
+                if (x >= this.img.getWidth()) x = this.img.getWidth()-1;
+                if (y >= this.img.getHeight()) y = this.img.getHeight()-1;
                 color = new Color(this.img.getRGB(x, y));
             }
 
