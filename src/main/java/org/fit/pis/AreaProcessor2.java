@@ -208,7 +208,7 @@ public class AreaProcessor2
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
 //            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
             threshold = similarityThreshold;
-            similarity = a.getSimilarityFromGraph(b, relation.getSimilarity());
+            similarity = relation.getSimilarity();
             mergeTest = this.mergeTest(relation);
             if (similarity > threshold || !mergeTest)
             {
@@ -476,19 +476,8 @@ public class AreaProcessor2
 
     private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
     {
-        int e, e1, e2;
-        double m, x;
         PageArea group;
         int vert, horiz;
-
-        x = rel.getSimilarity();
-
-        e1 = a.getChildren().size();
-        e2 = b.getChildren().size();
-        e = a.getEdgeCount()+b.getEdgeCount();
-        e += ((e1 > 0)?e1:1)*((e2 > 0)?e2:1);
-
-        m = getMergedM(a, b, x);
 
         vert = a.getVEdgeCount()+b.getVEdgeCount();
         horiz = a.getHEdgeCount()+b.getHEdgeCount();
@@ -502,11 +491,8 @@ public class AreaProcessor2
         }
 
         group = new PageArea(a);
-        group.setEdgeCount(e);
         group.setVEdgeCount(vert);
         group.setHEdgeCount(horiz);
-        group.setMeanDistance(m);
-
 
         this.mergeChildren(group, a);
         this.mergeChildren(group, b);
@@ -542,37 +528,6 @@ public class AreaProcessor2
                 child.setParent(a);
             }
         }
-    }
-
-    double getMergedM(PageArea a, PageArea b, double x)
-    {
-        int v1, v2, e1, e2;
-        double m1, m2;
-
-        if (a.getChildren().size() > 0)
-        {
-            v1 = a.getChildren().size();
-        }
-        else
-        {
-            v1 = 0;
-        }
-
-        if (b.getChildren().size() > 0)
-        {
-            v2 = b.getChildren().size();
-        }
-        else
-        {
-            v2 = 0;
-        }
-
-        e1 = a.getEdgeCount();
-        e2 = b.getEdgeCount();
-        m1 = a.getMeanDistance();
-        m2 = b.getMeanDistance();
-
-        return (e1*m1+(v1-1)*v2*m1 + v1*v2*x + v1*(v2-1)*m2+e2*m2)/(e1+v1*v2+e2);
     }
 
     private int getAreaCount(PageArea a)
@@ -729,7 +684,6 @@ public class AreaProcessor2
                         {
                             newGroup.addVEdgeCount(rel.getCardinality());
                         }
-                        newGroup.setEdgeCount(rel.getCardinality());
                         candidate = null;
                     }
                     else
@@ -745,10 +699,7 @@ public class AreaProcessor2
                     {
                         bestRel = tmpRelations.get(candidate);
                         bestRel.addCardinality(rel.getCardinality());
-                        if (rel.getSimilarity() < bestRel.getSimilarity())
-                        {
-                            bestRel.setSimilarity(rel.getSimilarity());
-                        }
+                        bestRel.addSimilarity(rel.getSimilarity());
                     }
                     else
                     {
@@ -765,7 +716,9 @@ public class AreaProcessor2
 
         for (Map.Entry<PageArea, PageAreaRelation> entry : tmpRelations.entrySet())
         {
-            relations.add(entry.getValue());
+            rel = entry.getValue();
+            rel.setSimilarity(rel.getSimilarity()/rel.getCardinality());
+            relations.add(rel);
         }
 
 

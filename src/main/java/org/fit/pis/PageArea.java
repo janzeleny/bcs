@@ -24,11 +24,8 @@ public class PageArea
     private int maxNeighborDistance;
 
     private Rectangle rectangle;
-    private int edgeCount;
     private int vEdgeCount;
     private int hEdgeCount;
-    /* This is a mean distance within a group */
-    private double meanDistance;
 
     public static final int ALIGNMENT_NONE = 0;
     public static final int ALIGNMENT_LINE = 1;
@@ -54,10 +51,8 @@ public class PageArea
         this.maxNeighborDistance = 0;
         this.meanNeighborDistance = 0;
         this.rectangle = null;
-        this.edgeCount = 0;
         this.vEdgeCount = 0;
         this.hEdgeCount = 0;
-        this.meanDistance = 0;
     }
 
     public PageArea(PageArea a)
@@ -72,10 +67,8 @@ public class PageArea
         this.right = a.right;
         this.top = a.top;
         this.bottom = a.bottom;
-        this.edgeCount = a.edgeCount;
         this.vEdgeCount = a.vEdgeCount;
         this.hEdgeCount = a.hEdgeCount;
-        this.meanDistance = a.meanDistance;
         this.children = new ArrayList<PageArea>();
         this.neighbors = new HashMap<PageArea, PageAreaRelation>();
         this.maxNeighborDistance = 0;
@@ -318,43 +311,6 @@ public class PageArea
         }
 
         this.meanNeighborDistance = sum/((cnt!=0)?cnt:1);
-    }
-
-    public double getSimilarityFromGraph(PageArea area, double x)
-    {
-        int v1, v2;
-        double m1, m2;
-        double distance;
-
-        if (this.getChildren() != null && this.getChildren().size() > 0)
-        {
-            v1 = this.getChildren().size();
-        }
-        else
-        {
-            v1 = 1;
-        }
-
-        if (area.getChildren() != null && area.getChildren().size() > 0)
-        {
-            v2 = area.getChildren().size();
-        }
-        else
-        {
-            v2 = 1;
-        }
-
-        if (v1 > 1 && v2 > 1)
-        {
-            /* Two groups might be touching each other */
-            distance = this.getDistance(area);
-            if (distance == 0) return 0;
-        }
-
-        m1 = this.getMeanDistance();
-        m2 = area.getMeanDistance();
-
-        return ((v1-1)*v2*m1 + v1*v2*x + v1*(v2-1)*m2)/(v1*v2);
     }
 
     public double getSimilarity(PageArea a)
@@ -703,31 +659,6 @@ public class PageArea
         this.rectangle = null;
     }
 
-    public int getEdgeCount()
-    {
-        return edgeCount;
-    }
-
-    public void setEdgeCount(int edgeCount)
-    {
-        this.edgeCount = edgeCount;
-    }
-
-    public void addEdgeCount(int edgeCount)
-    {
-        this.edgeCount += edgeCount;
-    }
-
-    public double getMeanDistance()
-    {
-        return meanDistance;
-    }
-
-    public void setMeanDistance(double meanDistance)
-    {
-        this.meanDistance = meanDistance;
-    }
-
     public int getVEdgeCount()
     {
         return vEdgeCount;
@@ -735,9 +666,14 @@ public class PageArea
 
     public double getVRatio()
     {
+        int edgeCount;
         if (this.vEdgeCount == 0) return 0.1;
-        else if (this.edgeCount == 0) return 0;
-        else return this.vEdgeCount/this.edgeCount;
+        else
+        {
+            edgeCount = this.vEdgeCount+this.hEdgeCount;
+            if (edgeCount == 0) return 0;
+            else return this.vEdgeCount/edgeCount;
+        }
     }
 
     public void setVEdgeCount(int vEdgeCount)
@@ -757,9 +693,14 @@ public class PageArea
 
     public double getHRatio()
     {
+        int edgeCount;
         if (this.hEdgeCount == 0) return 0.1;
-        else if (this.edgeCount == 0) return 0;
-        else return this.hEdgeCount/this.edgeCount;
+        else
+        {
+            edgeCount = this.vEdgeCount+this.hEdgeCount;
+            if (edgeCount == 0) return 0;
+            else return this.hEdgeCount/edgeCount;
+        }
     }
 
     public void setHEdgeCount(int hEdgeCount)

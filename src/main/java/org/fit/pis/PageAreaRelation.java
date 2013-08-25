@@ -53,6 +53,11 @@ public class PageAreaRelation
         this.similarity = similarity;
     }
 
+    public void addSimilarity(double similarity)
+    {
+        this.similarity += similarity;
+    }
+
     public int getDirection()
     {
         return direction;
