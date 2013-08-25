@@ -773,6 +773,7 @@ public class AreaProcessor2
     {
         ArrayList<PageAreaRelation> relations = new ArrayList<PageAreaRelation>();
         ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
+        int edge;
         PageArea a, b;
         Rectangle selector;
         double similarity;
@@ -782,23 +783,27 @@ public class AreaProcessor2
         {
             a = areas.get(i);
             /* First go right */
-            selector = new Rectangle(a.getLeft(), a.getTop(), this.pageWidth, a.getBottom());
+            /* DOC: the a.right+1 is for optimization, originally it was a.left */
+            selector = new Rectangle(a.getRight()+1, a.getTop(), this.pageWidth, a.getBottom());
             tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_HORIZONTAL);
             this.processRelations(tmpRelations, relations, true);
 
             /* Now go down */
-            selector = new Rectangle(a.getLeft(), a.getTop(), a.getRight(), this.pageHeight);
+            /* DOC: the a.bottom+1 is for optimization, originally it was a.top */
+            selector = new Rectangle(a.getLeft(), a.getBottom()+1, a.getRight(), this.pageHeight);
             tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_VERTICAL);
             this.processRelations(tmpRelations, relations, true);
 
             /* DOC: Now just to be sure, go up and left, but don't add those into the global list, as we already have them */
             /* First left */
-            selector = new Rectangle(0, a.getTop(), a.getRight(), a.getBottom());
+            edge = (a.getLeft()>0)?(a.getLeft()-1):0;
+            selector = new Rectangle(0, a.getTop(), edge, a.getBottom());
             tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_HORIZONTAL);
             this.processRelations(tmpRelations, relations, false);
 
             /* And finally up */
-            selector = new Rectangle(a.getLeft(), 0, a.getRight(), a.getBottom());
+            edge = (a.getTop()>0)?(a.getTop()-1):0;
+            selector = new Rectangle(a.getLeft(), 0, a.getRight(), edge);
             tmpRelations = this.findRelations(tmpRelations, a, selector, PageAreaRelation.DIRECTION_VERTICAL);
             this.processRelations(tmpRelations, relations, false);
         }
