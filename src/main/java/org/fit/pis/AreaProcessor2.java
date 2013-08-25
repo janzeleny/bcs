@@ -657,7 +657,6 @@ public class AreaProcessor2
 
             if (candidate != null)
             {
-                this.log.write("Selected candidate: "+candidate.toString()+"\n");
                 if (merged.contains(candidate))
                 {
                     /* This is a corner case that both endpoints
@@ -684,7 +683,7 @@ public class AreaProcessor2
                         {
                             newGroup.addVEdgeCount(rel.getCardinality());
                         }
-                        candidate = null;
+                        continue;
                     }
                     else
                     {
@@ -692,25 +691,21 @@ public class AreaProcessor2
                     }
                 }
 
-                if (candidate != null)
+                if (tmpRelations.containsKey(candidate))
                 {
-                    this.log.write("candidate is not null\n");
-                    if (tmpRelations.containsKey(candidate))
-                    {
-                        bestRel = tmpRelations.get(candidate);
-                        bestRel.addCardinality(rel.getCardinality());
-                        bestRel.addSimilarity(rel.getSimilarity());
-                    }
-                    else
-                    {
-                        bestRel = new PageAreaRelation(newGroup, candidate, rel.getSimilarity(), rel.getDirection());
-                        bestRel.setCardinality(rel.getCardinality());
-                        tmpRelations.put(candidate, bestRel);
-                    }
-                    this.log.write("remove "+candidate.toString()+"\n");
-                    relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
-                    i--; // since we removed the relation, we need to scan the one that took its place
+                    bestRel = tmpRelations.get(candidate);
+                    bestRel.addCardinality(rel.getCardinality());
+                    bestRel.addSimilarity(rel.getSimilarity());
                 }
+                else
+                {
+                    bestRel = new PageAreaRelation(newGroup, candidate, rel.getSimilarity(), rel.getDirection());
+                    bestRel.setCardinality(rel.getCardinality());
+                    tmpRelations.put(candidate, bestRel);
+                }
+                this.log.write("remove "+rel.toString()+"\n");
+                relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
+                i--; // since we removed the relation, we need to scan the one that took its place
             }
         }
 
