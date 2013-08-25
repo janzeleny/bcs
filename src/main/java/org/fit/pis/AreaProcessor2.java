@@ -198,7 +198,7 @@ public class AreaProcessor2
 
             if (relations.size() == 0 && a.getParent() == null && b.getParent() == null) break;
 
-            this.log.write(relation.toString()+"\n");
+            this.log.write("Picked "+relation.toString()+"\n");
 
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
