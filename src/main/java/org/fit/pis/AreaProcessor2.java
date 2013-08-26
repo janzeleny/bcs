@@ -579,7 +579,8 @@ public class AreaProcessor2
 
         match = new AreaMatch();
         this.areaTree.intersects(tmpArea.getRectangle(), match);
-        return (match.getIds().size() <= areaCnt);
+        if (match.getIds().size() <= areaCnt) return true;
+        else return false;
     }
 
     private boolean mergeTestDensity(PageArea a, PageArea b, int shape)
