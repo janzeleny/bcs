@@ -477,22 +477,8 @@ public class AreaProcessor2
     private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
     {
         PageArea group;
-        int vert, horiz;
-
-        vert = a.getVEdgeCount()+b.getVEdgeCount();
-        horiz = a.getHEdgeCount()+b.getHEdgeCount();
-        if (rel.getDirection() == PageAreaRelation.DIRECTION_VERTICAL)
-        {
-            vert += rel.getCardinality();
-        }
-        else
-        {
-            horiz += rel.getCardinality();
-        }
 
         group = new PageArea(a);
-        group.setVEdgeCount(vert);
-        group.setHEdgeCount(horiz);
 
         this.mergeChildren(group, a);
         this.mergeChildren(group, b);
@@ -662,33 +648,24 @@ public class AreaProcessor2
                     /* This is a corner case that both endpoints
                      * of the relation are in the new group */
                     // TODO: do some recalculations here like H/V edge count
-                    this.log.write("relation within a group, removing: "+rel.toString()+"\n");
+                    this.log.write("remove "+rel.toString()+" (within group)\n");
+                    if (rel.getDirection() == PageAreaRelation.DIRECTION_HORIZONTAL)
+                    {
+                        newGroup.addHEdgeCount(rel.getCardinality());
+                    }
+                    else
+                    {
+                        newGroup.addVEdgeCount(rel.getCardinality());
+                    }
                     relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
                     i--; // since we removed the relation, we need to scan the one that took its place
                     continue;
                 }
 
-                /* Again, just in case ... */
+                /* This shouldn't happen but still ... */
                 if (candidate.getParent() != null)
                 {
-                    this.log.write("parent is not null\n");
-                    if (candidate.getParent() == newGroup)
-                    {
-                        this.log.write("parent is the new group\n");
-                        if (rel.getDirection() == PageAreaRelation.DIRECTION_HORIZONTAL)
-                        {
-                            newGroup.addHEdgeCount(rel.getCardinality());
-                        }
-                        else
-                        {
-                            newGroup.addVEdgeCount(rel.getCardinality());
-                        }
-                        continue;
-                    }
-                    else
-                    {
-                        candidate = candidate.getParent();
-                    }
+                    candidate = candidate.getParent();
                 }
 
                 if (tmpRelations.containsKey(candidate))
