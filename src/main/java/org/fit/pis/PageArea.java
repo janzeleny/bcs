@@ -462,7 +462,7 @@ public class PageArea
         double forward, backward;
         double dist;
 
-        if (rel == null || this.maxNeighborDistance == 0 || a.maxNeighborDistance == 0) return 1.0;
+        if (rel == null) return 1.0;
 
         if (this == a || this.overlaps(a)) return 0.0;
 
