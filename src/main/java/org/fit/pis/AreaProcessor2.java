@@ -855,6 +855,7 @@ public class AreaProcessor2
                 if (r.getAbsoluteDistance() <= distMark)
                 {
                     r.getA().addNeighbor(r);
+                    if (append) all.add(r);
                 }
                 else
                 {
@@ -862,7 +863,6 @@ public class AreaProcessor2
                 }
             }
 
-            if (append) all.addAll(batch);
             batch.clear();
         }
     }
