@@ -31,6 +31,11 @@ public class PageArea
     public static final int ALIGNMENT_LINE = 1;
     public static final int ALIGNMENT_COLUMN = 2;
 
+    public static final int ALIGNMENT_LEFT = 1;
+    public static final int ALIGNMENT_RIGHT = 2;
+    public static final int ALIGNMENT_TOP = 4;
+    public static final int ALIGNMENT_BOTTOM = 8;
+
     public static final int SHAPE_BLOB = 0;
     public static final int SHAPE_COLUMN = 1;
     public static final int SHAPE_ROW = 2;
@@ -499,6 +504,16 @@ public class PageArea
         else if (a.getTop() == this.getTop()) return ALIGNMENT_LINE;
         else if (a.getRight() == this.getRight()) return ALIGNMENT_COLUMN;
         else if (a.getBottom() == this.getBottom()) return ALIGNMENT_LINE;
+
+        else return ALIGNMENT_NONE;
+    }
+
+    public int getSideAlignment(PageArea a)
+    {
+        if (a.getLeft() == this.getLeft()) return ALIGNMENT_LEFT;
+        else if (a.getTop() == this.getTop()) return ALIGNMENT_TOP;
+        else if (a.getRight() == this.getRight()) return ALIGNMENT_RIGHT;
+        else if (a.getBottom() == this.getBottom()) return ALIGNMENT_BOTTOM;
 
         else return ALIGNMENT_NONE;
     }

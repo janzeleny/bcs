@@ -801,7 +801,8 @@ public class AreaProcessor2
             a = rel.getA();
             b = rel.getB();
             similarity = a.getSimilarity(b);
-            rel.setSimilarity(similarity);
+            rel.setAlignmentScore(rel.computeAlignmentScore());
+            rel.setSimilarity(similarity/rel.getAlignmentScore());
         }
 
         Collections.sort(relations, new RelationComparator());

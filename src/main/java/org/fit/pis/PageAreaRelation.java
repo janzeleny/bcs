@@ -1,10 +1,16 @@
 package org.fit.pis;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
 public class PageAreaRelation
 {
     private PageArea a;
     private PageArea b;
     private double similarity;
+    private int alignmentScore;
     private int absoluteDistance;
 
     private int direction;
@@ -21,6 +27,7 @@ public class PageAreaRelation
         this.similarity = similarity;
         this.setDirection(direction);
         this.setCardinality(1);
+        this.setAlignmentScore(1);
     }
 
     public PageArea getA()
@@ -97,5 +104,61 @@ public class PageAreaRelation
     public String toString()
     {
         return "Relation: "+this.getAbsoluteDistance()+"-"+this.getSimilarity()+"-"+this.a.toString()+"-"+this.b.toString();
+    }
+
+    public int getAlignmentScore()
+    {
+        return alignmentScore;
+    }
+
+    public void setAlignmentScore(int alignmentScore)
+    {
+        this.alignmentScore = alignmentScore;
+    }
+
+    public void addAlignmentScore(int alignmentScore)
+    {
+        this.alignmentScore += alignmentScore;
+    }
+
+    public int computeAlignmentScore()
+    {
+        int aligned = 1;
+        int alignment = PageArea.ALIGNMENT_NONE;
+
+        ArrayList<PageArea> queue = new ArrayList<PageArea>();
+        HashMap<PageArea, PageAreaRelation> neighbors;
+        HashSet<PageArea> inspected = new HashSet<PageArea>();
+        PageArea area, cur;
+        PageAreaRelation relation;
+
+        alignment = a.getSideAlignment(b);
+        if (alignment == PageArea.ALIGNMENT_NONE) return aligned;
+
+        queue.add(this.a);
+        queue.add(this.b);
+        while (queue.size() > 0)
+        {
+            cur = queue.get(0);
+            queue.remove(0);
+            if (inspected.contains(cur) || queue.contains(cur)) continue;
+
+            neighbors = cur.getNeighbors();
+            for (Map.Entry<PageArea, PageAreaRelation> entry: neighbors.entrySet())
+            {
+                area = entry.getKey();
+                relation = entry.getValue();
+
+                if (relation.getDirection() != this.direction ||
+                    inspected.contains(area) || queue.contains(area) ||
+                    cur.getSideAlignment(area) != alignment) continue;
+
+                aligned++;
+                queue.add(area);
+            }
+
+            inspected.add(cur);
+        }
+        return aligned;
     }
 }
