@@ -44,7 +44,7 @@ public class AreaProcessor2
     private final SpatialIndex areaTree;
     private final SpatialIndex groupTree;
 
-    private final HashSet<PageArea> groups;
+    private final HashMap<Integer, PageArea> groupMap;
     private final ArrayList<PageArea> ungrouped;
 
     public static final double similarityThreshold = 0.2;
@@ -64,7 +64,7 @@ public class AreaProcessor2
         this.areaTree = new RTree();
         this.areaTree.init(null);
 
-        this.groups = new HashSet<PageArea>();
+        this.groupMap = new HashMap<Integer, PageArea>();
         this.groupTree = new RTree();
         this.groupTree.init(null);
 
@@ -127,9 +127,9 @@ public class AreaProcessor2
         }
     }
 
-    public HashSet<PageArea> getGroups() throws Exception
+    public HashMap<Integer, PageArea> getGroups() throws Exception
     {
-        if (this.groups.isEmpty())
+        if (this.groupMap.isEmpty())
         {
             if (!this.areas.isEmpty())
             {
@@ -137,7 +137,7 @@ public class AreaProcessor2
             }
         }
 
-        return this.groups;
+        return this.groupMap;
     }
 
     public ArrayList<PageArea> extractGroups(List<PageArea> areas) throws Exception
@@ -154,7 +154,7 @@ public class AreaProcessor2
         this.locateGroups(relations);
 
         this.ungrouped.clear();
-        for (PageArea group: groups)
+        for (PageArea group: groupMap.values())
         {
             ret.add(group);
         }
@@ -298,9 +298,10 @@ public class AreaProcessor2
                 this.log.write("Final Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
                 this.transferNeighbors(a, b, group);
                 this.transferRelations(a, b, group, relations);
-                this.groups.remove(a);
-                this.groups.remove(b);
-                this.groups.add(group);
+                if (a.getId() != null) this.groupMap.remove(a.getId());
+                if (b.getId() != null) this.groupMap.remove(b.getId());
+                group.calculateId();
+                this.groupMap.put(group.getId(), group);
                 this.groupTree.delete(a.getRectangle(), 0);
                 this.groupTree.delete(b.getRectangle(), 0);
                 this.groupTree.add(group.getRectangle(), 0);

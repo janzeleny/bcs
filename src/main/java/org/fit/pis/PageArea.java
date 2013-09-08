@@ -10,6 +10,8 @@ import com.infomatiq.jsi.Rectangle;
 
 public class PageArea
 {
+    private Integer id;
+
     private Color color;
     private int left;
     private int right;
@@ -58,6 +60,7 @@ public class PageArea
         this.rectangle = null;
         this.vEdgeCount = 0;
         this.hEdgeCount = 0;
+        this.id = null;
     }
 
     public PageArea(PageArea a)
@@ -78,12 +81,29 @@ public class PageArea
         this.neighbors = new HashMap<PageArea, PageAreaRelation>();
         this.maxNeighborDistance = 0;
         this.meanNeighborDistance = 0;
+        this.id = null;
 
         if (inheritChildren)
         {
             /* We don't want to change the relationships, just transfer the references */
             this.children.addAll(a.getChildren());
         }
+    }
+
+    public Integer getId()
+    {
+        return this.id;
+    }
+
+    public void setId(int top, int left)
+    {
+        // TODO: this can cause problems if the page is wider than 9999px
+        this.id = new Integer(top*10000+left);
+    }
+
+    public void calculateId()
+    {
+        this.setId(this.top, this.left);
     }
 
     public boolean contains(PageArea obj)
