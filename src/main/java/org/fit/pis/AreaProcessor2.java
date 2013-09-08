@@ -38,7 +38,7 @@ class AreaMatch implements TIntProcedure
 
 public class AreaProcessor2
 {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private final ArrayList<PageArea> areas;
 
     private final SpatialIndex areaTree;
@@ -198,7 +198,7 @@ public class AreaProcessor2
 
             if (relations.size() == 0 && a.getParent() == null && b.getParent() == null) break;
 
-            this.log.write("Picked "+relation.toString()+"\n");
+            if (DEBUG) this.log.write("Picked "+relation.toString()+"\n");
 
             v1 = this.getAreaCount(a);
             v2 = this.getAreaCount(b);
@@ -214,12 +214,12 @@ public class AreaProcessor2
             {
                 if (similarity <= threshold && !mergeTest)
                 {
-                    this.log.write("Merge attempt failed\n");
+                    if (DEBUG) this.log.write("Merge attempt failed\n");
                     mtRelations.add(relation);
                 }
                 else if (similarity >= threshold)
                 {
-                    this.log.write("Similarity comparison failed: "+similarity+" >= "+threshold+"\n");
+                    if (DEBUG) this.log.write("Similarity comparison failed: "+similarity+" >= "+threshold+"\n");
                 }
                 if (relations.size() == 0 && mtRelations.size() < relCnt)
                 {
@@ -232,7 +232,7 @@ public class AreaProcessor2
 
             group = this.mergeAreas(a, b, relation);
             mergeCandidates.clear();
-            this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+") - ("+v1+", "+v2+")\n");
+            if (DEBUG) this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+") - ("+v1+", "+v2+")\n");
 
             match = new AreaMatch();
             this.groupTree.intersects(group.getRectangle(), match);
@@ -253,11 +253,11 @@ public class AreaProcessor2
 
                 if (area_overlap)
                 {
-                    this.log.write("overlap = true; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
+                    if (DEBUG) this.log.write("overlap = true; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
                     /* First try to include all those overlapping areas in the group */
                     if (!this.growGroup(group, match.getIds(), mergeCandidates))
                     {
-                        this.log.write("group grow failed\n");
+                        if (DEBUG) this.log.write("group grow failed\n");
                         this.reclaim(a);
                         this.reclaim(b);
                         this.returnChildren(group);
@@ -266,20 +266,20 @@ public class AreaProcessor2
                     else
                     {
                         vsum = group.getChildren().size()+mergeCandidates.size();
-                        this.log.write("updated vsum: " + vsum+"\n");
+                        if (DEBUG) this.log.write("updated vsum: " + vsum+"\n");
                     }
                 }
                 else
                 {
-                    this.log.write("overlap = false; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
+                    if (DEBUG) this.log.write("overlap = false; vsum = "+vsum+"; matches = "+match.getIds().size()+"\n");
                     if (mergeCandidates.size() > 0)
                     {
                         /* The group can't be expanded more by overlapping children,
                          * try to merge those areas that might be somewhere in between them */
-                        this.log.write("trying to merge group "+group.toString()+" and "+mergeCandidates.size()+" candidates\n");
+                        if (DEBUG) this.log.write("trying to merge group "+group.toString()+" and "+mergeCandidates.size()+" candidates\n");
                         if (!this.tryMerge(group, mergeCandidates))
                         {
-                            this.log.write("merging failed\n");
+                            if (DEBUG) this.log.write("merging failed\n");
                             this.reclaim(a);
                             this.reclaim(b);
                             this.returnChildren(group);
@@ -295,7 +295,7 @@ public class AreaProcessor2
             if (!area_overlap)
             {
                 /* Now we have to add children completely */
-                this.log.write("Final Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
+                if (DEBUG) this.log.write("Final Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+")\n");
                 this.transferNeighbors(a, b, group);
                 this.transferRelations(a, b, group, relations);
                 if (a.getId() != null) this.groupMap.remove(a.getId());
@@ -341,10 +341,10 @@ public class AreaProcessor2
             for (int i = 0 ; i < areas.size() ; i++)
             {
                 area = areas.get(i);
-                this.log.write("area test for merge: "+area.toString());
+                if (DEBUG) this.log.write("area test for merge: "+area.toString());
                 if (area.getParent() == group)
                 {
-                    this.log.write(" (already in the group)\n");
+                    if (DEBUG) this.log.write(" (already in the group)\n");
                     areas.remove(i);
                     i--;
                     continue;
@@ -352,7 +352,7 @@ public class AreaProcessor2
                 else if (area.getParent() != null)
                 {
                     /* This belongs to another group - that's a show stopper */
-                    this.log.write(" (belongs to another group)\n");
+                    if (DEBUG) this.log.write(" (belongs to another group)\n");
                     return false;
                 }
                 else
@@ -363,7 +363,7 @@ public class AreaProcessor2
                         {
                             merged = true;
                             group.addChild(area);
-                            this.log.write(" (merged - overlap)\n");
+                            if (DEBUG) this.log.write(" (merged - overlap)\n");
                             break;
                         }
                     }
@@ -380,7 +380,7 @@ public class AreaProcessor2
                         {
                             mergeCandidates.add(area);
                         }
-                        this.log.write(" (not merged)\n");
+                        if (DEBUG) this.log.write(" (not merged)\n");
                     }
                 }
             }
@@ -402,13 +402,13 @@ public class AreaProcessor2
 
         for (PageArea area: areas)
         {
-            this.log.write("candidate: "+area.toString());
+            if (DEBUG) this.log.write("candidate: "+area.toString());
             mark = new PageArea(tmpGroup);
             tmpGroup.addChild(area, true);
             if (group.contains(tmpGroup))
             {
                 /* The new area doesn't make the group expand - it can be added */
-                this.log.write(" is within the group\n");
+                if (DEBUG) this.log.write(" is within the group\n");
                 group.addChild(area);
                 candidateCnt--;
             }
@@ -429,7 +429,7 @@ public class AreaProcessor2
                         if (tmpArea.getDistanceAbsolute(mark) <= 1)
                         {
                             mergeList.add(area);
-                            this.log.write(" brings new adjacent box\n");
+                            if (DEBUG) this.log.write(" brings new adjacent box\n");
                             merge = true;
                             break;
                         }
@@ -437,7 +437,7 @@ public class AreaProcessor2
 
                     if (!merge)
                     {
-                        this.log.write(" would bring more boxes to the group\n");
+                        if (DEBUG) this.log.write(" would bring more boxes to the group\n");
                         return false;
                     }
                 }
@@ -445,7 +445,7 @@ public class AreaProcessor2
                 {
                     /* Adding the area to the group extended the group but
                      * it didn't bring in any new areas */
-                    this.log.write(" expands the group but can be included\n");
+                    if (DEBUG) this.log.write(" expands the group but can be included\n");
                     group.addChild(area);
                     candidateCnt--;
                 }
@@ -454,7 +454,7 @@ public class AreaProcessor2
 
         for (PageArea a: mergeList)
         {
-            this.log.write("merging "+a.toString()+"\n");
+            if (DEBUG) this.log.write("merging "+a.toString()+"\n");
             group.addChild(a);
         }
 
@@ -650,7 +650,7 @@ public class AreaProcessor2
                     /* This is a corner case that both endpoints
                      * of the relation are in the new group */
                     // TODO: do some recalculations here like H/V edge count
-                    this.log.write("remove "+rel.toString()+" (within group)\n");
+                    if (DEBUG) this.log.write("remove "+rel.toString()+" (within group)\n");
                     if (rel.getDirection() == PageAreaRelation.DIRECTION_HORIZONTAL)
                     {
                         newGroup.addHEdgeCount(rel.getCardinality());
@@ -682,7 +682,7 @@ public class AreaProcessor2
                     bestRel.setCardinality(rel.getCardinality());
                     tmpRelations.put(candidate, bestRel);
                 }
-                this.log.write("remove "+rel.toString()+"\n");
+                if (DEBUG) this.log.write("remove "+rel.toString()+"\n");
                 relations.remove(i); /* Using "i" here instead of "rel" boosts perf. (6s -> 2.5s) */
                 i--; // since we removed the relation, we need to scan the one that took its place
             }
