@@ -103,7 +103,7 @@ public class PageAreaRelation
     @Override
     public String toString()
     {
-        return "Relation: "+this.getAbsoluteDistance()+"-"+this.getSimilarity()+"-"+this.a.toString()+"-"+this.b.toString();
+        return "Relation: "+this.getAbsoluteDistance()+"-"+this.getSimilarity()+"-"+this.getCardinality()+"-"+this.a.toString()+"-"+this.b.toString();
     }
 
     public int getAlignmentScore()
