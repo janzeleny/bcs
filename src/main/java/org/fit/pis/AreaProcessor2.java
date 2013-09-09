@@ -637,6 +637,7 @@ public class AreaProcessor2
         PageAreaRelation rel;
         PageAreaRelation bestRel;
         PageArea candidate;
+        double tmpSimilarity;
         HashMap<PageArea, PageAreaRelation> tmpRelations = new HashMap<PageArea, PageAreaRelation>();
         HashSet<PageArea> merged = new HashSet<PageArea>();
 
@@ -690,7 +691,8 @@ public class AreaProcessor2
                 }
                 else
                 {
-                    bestRel = new PageAreaRelation(newGroup, candidate, rel.getSimilarity(), rel.getDirection());
+                    tmpSimilarity = rel.getSimilarity()*rel.getCardinality();
+                    bestRel = new PageAreaRelation(newGroup, candidate, tmpSimilarity, rel.getDirection());
                     bestRel.setCardinality(rel.getCardinality());
                     tmpRelations.put(candidate, bestRel);
                 }
