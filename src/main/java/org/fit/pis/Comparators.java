@@ -36,6 +36,9 @@ class RelationComparator implements Comparator<PageAreaRelation> {
         diff = this.compareSimilarity(a, b);
         if (diff != 0) return diff;
 
+        diff = this.compareSize(a, b);
+        if (diff != 0) return diff;
+
         diff = this.compareATop(a, b);
         if (diff != 0) return diff;
 
@@ -54,6 +57,22 @@ class RelationComparator implements Comparator<PageAreaRelation> {
     protected int compareSimilarity(PageAreaRelation a, PageAreaRelation b)
     {
         double diff = a.getSimilarity() - b.getSimilarity();
+
+        if (diff > 0) return 1;
+        else if (diff < 0) return -1;
+        else return 0;
+    }
+
+    protected int compareSize(PageAreaRelation a, PageAreaRelation b)
+    {
+        int sizeA;
+        int sizeB;
+        sizeA = a.getA().getWidth()*a.getA().getHeight();
+        sizeA += a.getB().getWidth()*a.getB().getHeight();
+        sizeB = b.getA().getWidth()*b.getA().getHeight();
+        sizeB += b.getB().getWidth()*b.getB().getHeight();
+
+        int diff = sizeA-sizeB;
 
         if (diff > 0) return 1;
         else if (diff < 0) return -1;
