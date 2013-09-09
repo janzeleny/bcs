@@ -38,7 +38,7 @@ class AreaMatch implements TIntProcedure
 
 public class AreaProcessor2
 {
-    private static final boolean DEBUG = false;
+    private boolean DEBUG = false;
     private final ArrayList<PageArea> areas;
 
     private final SpatialIndex areaTree;
@@ -47,7 +47,7 @@ public class AreaProcessor2
     private final HashMap<Integer, PageArea> groupMap;
     private final ArrayList<PageArea> ungrouped;
 
-    public static final double similarityThreshold = 0.2;
+    private double similarityThreshold = 0.3;
 
     private final int pageWidth;
     private final int pageHeight;
@@ -76,6 +76,18 @@ public class AreaProcessor2
         this.time = new StopWatch(true);
 
         this.buildHierarchy(areas);
+    }
+
+    public void setThreshold(double t)
+    {
+        if (t < 0 || t > 1) return;
+
+        this.similarityThreshold = t;
+    }
+
+    public void setDebug(boolean d)
+    {
+        this.DEBUG = d;
     }
 
     private void buildHierarchy(ArrayList<PageArea> areas)
@@ -207,7 +219,7 @@ public class AreaProcessor2
 
             /* DOC: see graph of d depending on V2, there is a logarithmic dependency */
 //            threshold = similarityThreshold/(Math.log10(v1+v2)+1);
-            threshold = similarityThreshold;
+            threshold = this.similarityThreshold;
             similarity = relation.getSimilarity();
             mergeTest = this.mergeTest(relation);
             if (similarity > threshold || !mergeTest)

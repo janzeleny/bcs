@@ -92,8 +92,24 @@ public class Main
         ArrayList<PageArea> areas;
         ArrayList<PageArea> groups;
         ArrayList<PageArea> ungrouped;
+        double threshold = -1;
+        boolean debug = false;
+        boolean debugSet = false;
 
-        if (args.length < 1) return;
+        if (args.length < 1)
+        {
+            System.out.println("./run.sh <address>[ <threshold>[ debug]]");
+            return;
+        }
+        else if (args.length > 1)
+        {
+            threshold = new Double(args[1]);
+            if (args.length > 2)
+            {
+                debugSet = true;
+                debug = new Boolean(args[2]);
+            }
+        }
         urlString = args[0];
         System.out.println(urlString);
         imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-").replaceAll("\\?.*", "");
@@ -111,6 +127,9 @@ public class Main
         areas = c.getAreas(canvas.getRootBox());
 
         h = new AreaProcessor2(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
+        if (threshold > 0) h.setThreshold(threshold);
+        if (debugSet) h.setDebug(debug);
+
         groups = h.extractGroups(h.getAreas());
         ungrouped = h.getUngrouped();
 
