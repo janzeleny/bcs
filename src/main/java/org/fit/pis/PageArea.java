@@ -226,6 +226,63 @@ public class PageArea
         return this.children;
     }
 
+
+    public void reclaimChildren()
+    {
+        if (this.children.size() == 0)
+        {
+            this.setParent(null);
+        }
+        else
+        {
+            for (PageArea child: this.children)
+            {
+                child.setParent(this);
+            }
+        }
+    }
+
+    public void giveUpChildren()
+    {
+        for (PageArea child: this.getChildren())
+        {
+            /* We need to return all areas that have been added to
+             * the tmpGroup (not those inherited from the original group)
+             * to the pool */
+            if (child.getParent() == this)
+            {
+                child.setParent(null);
+            }
+        }
+    }
+
+    public int getAreaCount()
+    {
+        if (this.children.size() > 0)
+        {
+            return this.children.size();
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    public void mergeWith(PageArea a)
+    {
+        if (a.getChildren().size() > 0)
+        {
+            for (PageArea child: a.getChildren())
+            {
+                this.addChild(child);
+            }
+        }
+        else
+        {
+            this.addChild(a);
+        }
+    }
+
     public void setParent(PageArea parent)
     {
         this.parent = parent;

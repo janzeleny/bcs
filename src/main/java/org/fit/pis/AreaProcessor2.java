@@ -212,8 +212,8 @@ public class AreaProcessor2
 
             if (DEBUG) this.log.write("Picked "+relation.toString()+"\n");
 
-            v1 = this.getAreaCount(a);
-            v2 = this.getAreaCount(b);
+            v1 = a.getAreaCount();
+            v2 = b.getAreaCount();
             vsum = v1 + v2;
             groupCnt = (a.getChildren().size()==0?0:1)+(b.getChildren().size()==0?0:1);
 
@@ -242,7 +242,7 @@ public class AreaProcessor2
                 continue;
             }
 
-            group = this.mergeAreas(a, b, relation);
+            group = this.createGroup(a, b);
             mergeCandidates.clear();
             if (DEBUG) this.log.write("Group: "+group.getTop()+"-"+group.getLeft()+"("+group.getWidth()+"x"+group.getHeight()+") - ("+v1+", "+v2+")\n");
 
@@ -251,9 +251,9 @@ public class AreaProcessor2
             /* It will always overlap with the two areas already in the group */
             if (match.getIds().size() > groupCnt)
             {
-                this.reclaim(a);
-                this.reclaim(b);
-                this.returnChildren(group);
+                a.reclaimChildren();
+                b.reclaimChildren();
+                group.giveUpChildren();
                 continue;
             }
 
@@ -270,9 +270,9 @@ public class AreaProcessor2
                     if (!this.growGroup(group, match.getIds(), mergeCandidates))
                     {
                         if (DEBUG) this.log.write("group grow failed\n");
-                        this.reclaim(a);
-                        this.reclaim(b);
-                        this.returnChildren(group);
+                        a.reclaimChildren();
+                        b.reclaimChildren();
+                        group.giveUpChildren();
                         break;
                     }
                     else
@@ -292,9 +292,9 @@ public class AreaProcessor2
                         if (!this.tryMerge(group, mergeCandidates))
                         {
                             if (DEBUG) this.log.write("merging failed\n");
-                            this.reclaim(a);
-                            this.reclaim(b);
-                            this.returnChildren(group);
+                            a.reclaimChildren();
+                            b.reclaimChildren();
+                            group.giveUpChildren();
                             area_overlap = true; /* Need to set this for the condition below */
                             break;
                         }
@@ -473,73 +473,18 @@ public class AreaProcessor2
         return true;
     }
 
-    private void returnChildren(PageArea group)
-    {
-        for (PageArea child: group.getChildren())
-        {
-            /* We need to return all areas that have been added to
-             * the tmpGroup (not those inherited from the original group)
-             * to the pool */
-            if (child.getParent() == group)
-            {
-                child.setParent(null);
-            }
-        }
-    }
-
-    private PageArea mergeAreas(PageArea a, PageArea b, PageAreaRelation rel)
+    private PageArea createGroup(PageArea a, PageArea b)
     {
         PageArea group;
 
         group = new PageArea(a);
 
-        this.mergeChildren(group, a);
-        this.mergeChildren(group, b);
+        group.mergeWith(a);
+        group.mergeWith(b);
 
         return group;
     }
 
-    private void mergeChildren(PageArea group, PageArea a)
-    {
-        if (a.getChildren().size() > 0)
-        {
-            for (PageArea child: a.getChildren())
-            {
-                group.addChild(child);
-            }
-        }
-        else
-        {
-            group.addChild(a);
-        }
-    }
-
-    private void reclaim(PageArea a)
-    {
-        if (a.getChildren().size() == 0)
-        {
-            a.setParent(null);
-        }
-        else
-        {
-            for (PageArea child: a.getChildren())
-            {
-                child.setParent(a);
-            }
-        }
-    }
-
-    private int getAreaCount(PageArea a)
-    {
-        if (a.getChildren().size() > 0)
-        {
-            return a.getChildren().size();
-        }
-        else
-        {
-            return 1;
-        }
-    }
 
     private boolean mergeTest(PageAreaRelation rel)
     {
@@ -588,7 +533,7 @@ public class AreaProcessor2
 
         tmpArea = new PageArea(a);
         tmpArea.addChild(b, true);
-        areaCnt = this.getAreaCount(a)+this.getAreaCount(b);
+        areaCnt = a.getAreaCount()+b.getAreaCount();
 
         match = new AreaMatch();
         this.areaTree.intersects(tmpArea.getRectangle(), match);
@@ -821,17 +766,6 @@ public class AreaProcessor2
         }
 
         Collections.sort(relations, new RelationComparator());
-
-        /* DOC: we need to compute distance now because we didn't know
-         * all the absolute distances before
-         */
-//        for (PageAreaRelation rel: relations)
-//        {
-//            a = rel.getA();
-//            b = rel.getB();
-//            similarity = a.getSimilarity(b);
-//            rel.setSimilarity(similarity);
-//        }
 
         return relations;
     }
