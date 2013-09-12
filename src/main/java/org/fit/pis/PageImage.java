@@ -163,7 +163,12 @@ public class PageImage
         AverageColor avg;
         ContentImage imgObj = (ContentImage)box.getContentObj();
 
-        avg = new AverageColor(imgObj.getBufferedImage());
+        try {
+            avg = new AverageColor(imgObj.getBufferedImage());
+        } catch (IllegalArgumentException e) {
+            /* Sometimes the image can have width or height equal to zero */
+            return;
+        }
         if (avg.getColor() == null) this.g.setColor(Color.black);
         else this.g.setColor(avg.getColor());
 

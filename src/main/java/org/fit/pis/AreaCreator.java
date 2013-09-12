@@ -295,7 +295,12 @@ public class AreaCreator
         PageArea area;
         ContentImage imgObj = (ContentImage)box.getContentObj();
 
-        avg = new AverageColor(imgObj.getBufferedImage());
+        try {
+            avg = new AverageColor(imgObj.getBufferedImage());
+        } catch (IllegalArgumentException e) {
+            /* Sometimes the image can have width or height equal to zero */
+            return;
+        }
         if (avg.getColor() == null || !this.onPage(pos.x, pos.y, pos.width, pos.height)) return;
 
         area = new PageArea(avg.getColor(), pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
