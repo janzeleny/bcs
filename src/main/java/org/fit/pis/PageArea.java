@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.w3c.dom.Node;
+
 import com.infomatiq.jsi.Rectangle;
 
 public class PageArea
@@ -28,6 +30,8 @@ public class PageArea
     private Rectangle rectangle;
     private int vEdgeCount;
     private int hEdgeCount;
+
+    private Node node;
 
     public static final int ALIGNMENT_NONE = 0;
     public static final int ALIGNMENT_LINE = 1;
@@ -61,6 +65,7 @@ public class PageArea
         this.vEdgeCount = 0;
         this.hEdgeCount = 0;
         this.id = null;
+        this.node = null;
     }
 
     public PageArea(PageArea a)
@@ -82,6 +87,7 @@ public class PageArea
         this.maxNeighborDistance = 0;
         this.meanNeighborDistance = 0;
         this.id = null;
+        this.node = null;
 
         if (inheritChildren)
         {
@@ -827,5 +833,15 @@ public class PageArea
     public boolean isBlob()
     {
         return !(this.isColumn() || this.isRow());
+    }
+
+    public Node getNode()
+    {
+        return node;
+    }
+
+    public void setNode(Node node)
+    {
+        this.node = node;
     }
 }

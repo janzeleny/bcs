@@ -285,6 +285,7 @@ public class AreaCreator
 
         area = new PageArea(new Color(Color.HSBtoRGB(hsb[0], hsb[1], hsb[2])),
                             pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
+        area.setNode(box.getNode());
         this.areas.add(area);
     }
 
@@ -304,6 +305,7 @@ public class AreaCreator
         if (avg.getColor() == null || !this.onPage(pos.x, pos.y, pos.width, pos.height)) return;
 
         area = new PageArea(avg.getColor(), pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
+        area.setNode(((Box)box).getNode());
         this.areas.add(area);
     }
 
@@ -326,6 +328,7 @@ public class AreaCreator
         if (c != null)
         {
             area = new PageArea(c, l, t, r, b);
+            area.setNode(box.getNode());
             this.areas.add(area);
         }
     }
