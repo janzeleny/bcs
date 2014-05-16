@@ -30,7 +30,7 @@ public class AreaCreator
 
     public ArrayList<PageArea> getAreas(ElementBox root)
     {
-        this.areas = new ArrayList<PageArea>();
+        this.areas = new ArrayList<>();
 
         this.getAreasSubtree(root, Color.white);
 

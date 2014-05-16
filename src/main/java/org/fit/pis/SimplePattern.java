@@ -168,13 +168,13 @@ public class SimplePattern
         else return ALIGNMENT_NONE;
     }
 
-    private double getWidthRatio(PageArea a, PageArea b)
+    public double getWidthRatio(PageArea a, PageArea b)
     {
         /* DOC: this is the same formula base as PageArea::getSizeSimilarity() uses  */
         return (double)Math.abs(a.getWidth()-b.getWidth())/(a.getWidth()+ b.getWidth());
     }
 
-    private double getHeightRatio(PageArea a, PageArea b)
+    public double getHeightRatio(PageArea a, PageArea b)
     {
         /* DOC: this is the same formula base as PageArea::getSizeSimilarity() uses  */
         return (double)Math.abs(a.getHeight()-b.getHeight())/(a.getHeight()+ b.getHeight());

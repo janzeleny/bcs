@@ -57,8 +57,8 @@ public class PageArea
         this.top = t;
         this.right = r;
         this.bottom = b;
-        this.children = new ArrayList<PageArea>();
-        this.neighbors = new HashMap<PageArea, PageAreaRelation>();
+        this.children = new ArrayList<>();
+        this.neighbors = new HashMap<>();
         this.maxNeighborDistance = 0;
         this.meanNeighborDistance = 0;
         this.rectangle = null;
@@ -82,8 +82,8 @@ public class PageArea
         this.bottom = a.bottom;
         this.vEdgeCount = a.vEdgeCount;
         this.hEdgeCount = a.hEdgeCount;
-        this.children = new ArrayList<PageArea>();
-        this.neighbors = new HashMap<PageArea, PageAreaRelation>();
+        this.children = new ArrayList<>();
+        this.neighbors = new HashMap<>();
         this.maxNeighborDistance = 0;
         this.meanNeighborDistance = 0;
         this.id = null;

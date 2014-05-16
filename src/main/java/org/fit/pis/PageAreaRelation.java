@@ -126,9 +126,9 @@ public class PageAreaRelation
         int aligned = 1;
         int alignment = PageArea.ALIGNMENT_NONE;
 
-        ArrayList<PageArea> queue = new ArrayList<PageArea>();
+        ArrayList<PageArea> queue = new ArrayList<>();
         HashMap<PageArea, PageAreaRelation> neighbors;
-        HashSet<PageArea> inspected = new HashSet<PageArea>();
+        HashSet<PageArea> inspected = new HashSet<>();
         PageArea area, cur;
         PageAreaRelation relation;
 

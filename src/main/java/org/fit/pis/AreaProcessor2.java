@@ -22,7 +22,7 @@ class AreaMatch implements TIntProcedure
 
     public AreaMatch()
     {
-        this.ids = new ArrayList<Integer>();
+        this.ids = new ArrayList<>();
     }
 
     @Override
@@ -60,15 +60,15 @@ public class AreaProcessor2
     {
         Collections.sort(areas, new AreaSizeComparator());
         /* Note: we store only leaf areas */
-        this.areas = new ArrayList<PageArea>();
+        this.areas = new ArrayList<>();
         this.areaTree = new RTree();
         this.areaTree.init(null);
 
-        this.groupMap = new HashMap<Integer, PageArea>();
+        this.groupMap = new HashMap<>();
         this.groupTree = new RTree();
         this.groupTree.init(null);
 
-        this.ungrouped = new ArrayList<PageArea>();
+        this.ungrouped = new ArrayList<>();
 
         this.pageHeight = width;
         this.pageWidth = height;
@@ -92,8 +92,8 @@ public class AreaProcessor2
 
     private void buildHierarchy(ArrayList<PageArea> areas)
     {
-        ArrayList<PageArea> pool = new ArrayList<PageArea>();
-        ArrayList<PageArea> deleteList = new ArrayList<PageArea>();
+        ArrayList<PageArea> pool = new ArrayList<>();
+        ArrayList<PageArea> deleteList = new ArrayList<>();
 
         pool.addAll(areas);
         Collections.sort(pool, new AreaSizeComparator());
@@ -155,7 +155,7 @@ public class AreaProcessor2
     public ArrayList<PageArea> extractGroups(List<PageArea> areas) throws Exception
     {
         ArrayList<PageAreaRelation> relations;
-        ArrayList<PageArea> ret = new ArrayList<PageArea>();
+        ArrayList<PageArea> ret = new ArrayList<>();
         FileWriter fstream;
 
         if (DEBUG) fstream = new FileWriter("/home/greengo/out.txt");
@@ -194,8 +194,8 @@ public class AreaProcessor2
         double threshold;
         double similarity;
         int relCnt = relations.size();
-        ArrayList<PageAreaRelation> mtRelations = new ArrayList<PageAreaRelation>();
-        ArrayList<PageArea> mergeCandidates = new ArrayList<PageArea>();
+        ArrayList<PageAreaRelation> mtRelations = new ArrayList<>();
+        ArrayList<PageArea> mergeCandidates = new ArrayList<>();
         boolean mergeTest;
 
         this.time.toggle();
@@ -327,14 +327,14 @@ public class AreaProcessor2
             }
         }
         this.time.toggle();
-        System.out.println("Total lookup time: " + this.time.getTotal()/1000000 + " ms");
+        System.out.println(this.time.getTotal()/1000000 + " ms");
     }
 
     private boolean growGroup(PageArea group, ArrayList<Integer> matches, ArrayList<PageArea> mergeCandidates) throws IOException
     {
         boolean merged = true;
         PageArea area;
-        ArrayList<PageArea> areas = new ArrayList<PageArea>();
+        ArrayList<PageArea> areas = new ArrayList<>();
         for (Integer i: matches)
         {
             areas.add(this.areas.get(i));
@@ -410,7 +410,7 @@ public class AreaProcessor2
         int matchCnt = 0;
         int candidateCnt = areas.size();
         boolean merge;
-        ArrayList<PageArea> mergeList = new ArrayList<PageArea>();
+        ArrayList<PageArea> mergeList = new ArrayList<>();
 
         for (PageArea area: areas)
         {
@@ -583,8 +583,8 @@ public class AreaProcessor2
         PageAreaRelation bestRel;
         PageArea candidate;
         double tmpSimilarity;
-        HashMap<PageArea, PageAreaRelation> tmpRelations = new HashMap<PageArea, PageAreaRelation>();
-        HashSet<PageArea> merged = new HashSet<PageArea>();
+        HashMap<PageArea, PageAreaRelation> tmpRelations = new HashMap<>();
+        HashSet<PageArea> merged = new HashSet<>();
 
         merged.add(oldGroup1);
         merged.add(oldGroup2);
@@ -662,13 +662,13 @@ public class AreaProcessor2
     {
         PageArea area;
         PageAreaRelation rel;
-        ArrayList<PageArea> delList = new ArrayList<PageArea>();
-        HashMap<PageArea, Integer> recalc = new HashMap<PageArea, Integer>();
+        ArrayList<PageArea> delList = new ArrayList<>();
+        HashMap<PageArea, Integer> recalc = new HashMap<>();
         /* children is a hash tab giving information about
          * which areas are children of the group
          * (those should not be added as neighBors of the new group)
          */
-        HashMap<PageArea, Integer> children = new HashMap<PageArea, Integer>();
+        HashMap<PageArea, Integer> children = new HashMap<>();
         for (PageArea child: newGroup.getChildren())
         {
             children.put(child, 0);
@@ -709,8 +709,8 @@ public class AreaProcessor2
 
     private ArrayList<PageAreaRelation> getAreaGraph(List<PageArea> areas)
     {
-        ArrayList<PageAreaRelation> relations = new ArrayList<PageAreaRelation>();
-        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
+        ArrayList<PageAreaRelation> relations = new ArrayList<>();
+        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<>();
         int edge;
         PageArea a, b;
         Rectangle selector;
@@ -775,7 +775,7 @@ public class AreaProcessor2
         AreaMatch match;
         PageArea b;
         PageAreaRelation rel;
-        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<PageAreaRelation>();
+        ArrayList<PageAreaRelation> tmpRelations = new ArrayList<>();
 
         match = new AreaMatch();
         this.areaTree.intersects(selector, match);

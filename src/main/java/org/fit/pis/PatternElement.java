@@ -16,7 +16,7 @@ public class PatternElement
     public PatternElement()
     {
         this.alignment = Pattern.ALIGNMENT_NONE;
-        this.subpatterns = new HashSet<PatternElement>();
+        this.subpatterns = new HashSet<>();
         this.wrapper = null;
     }
 

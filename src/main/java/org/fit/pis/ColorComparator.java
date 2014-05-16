@@ -67,7 +67,7 @@ public class ColorComparator
         });
     }
 
-    private void getMaxValues()
+    public void getMaxValues()
     {
         /* DOC: since it would take forever to iterate through
          * the entire color space, the trick is to divide by increments

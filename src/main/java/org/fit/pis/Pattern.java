@@ -141,9 +141,9 @@ public class Pattern
         int alignment;
         int tmpAlignment;
         int bestAlignment = ALIGNMENT_NONE;
-        HashSet<PageArea> bestAlignedSet = new HashSet<PageArea>();
-        HashSet<PageArea> alignedSet = new HashSet<PageArea>();
-        HashSet<PageArea> unAlignedSet = new HashSet<PageArea>();
+        HashSet<PageArea> bestAlignedSet = new HashSet<>();
+        HashSet<PageArea> alignedSet = new HashSet<>();
+        HashSet<PageArea> unAlignedSet = new HashSet<>();
 
         PageArea area;
         PageArea tmpArea;
@@ -185,7 +185,7 @@ public class Pattern
                 {
                     bestAlignment = alignment;
                     bestAlignedSet = alignedSet;
-                    alignedSet = new HashSet<PageArea>();
+                    alignedSet = new HashSet<>();
                 }
             }
 
@@ -214,8 +214,8 @@ public class Pattern
         int patAlignment;
 
         PatternElement subEl;
-        ArrayList<PageArea> deleteList = new ArrayList<PageArea>();
-        HashSet<PageArea> nextScan = new HashSet<PageArea>();
+        ArrayList<PageArea> deleteList = new ArrayList<>();
+        HashSet<PageArea> nextScan = new HashSet<>();
 
         for (PageArea a: this.unaligned)
         {
