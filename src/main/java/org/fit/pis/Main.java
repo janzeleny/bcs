@@ -23,6 +23,7 @@ import org.xml.sax.SAXException;
 public class Main
 {
     public static final String home = "/home/greengo/";
+    public static double threshold = -1;
 
     private static DOMAnalyzer renderPage(URL url) throws Exception, IOException, SAXException
     {
@@ -75,7 +76,7 @@ public class Main
             g.drawRect(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight());
         }
 
-        File outputfile = new File(home+imageName+"-boxes.png");
+        File outputfile = new File(home+imageName+"-boxes-"+threshold+".png");
         try {
             ImageIO.write(boxImg, "png", outputfile);
         } catch (IOException e) {
@@ -92,7 +93,6 @@ public class Main
         ArrayList<PageArea> areas;
         ArrayList<PageArea> groups;
         ArrayList<PageArea> ungrouped;
-        double threshold = -1;
         boolean debug = false;
         boolean debugSet = false;
 
@@ -113,6 +113,7 @@ public class Main
         urlString = args[0];
         System.out.println(urlString);
         imageString = urlString.replaceFirst("https?://", "").replaceFirst("/$", "").replaceAll("/", "-").replaceAll("\\?.*", "");
+        if (imageString.length() > 128) imageString = imageString.substring(0, 128);
         url = new URL(urlString);
 
         da = renderPage(url);
