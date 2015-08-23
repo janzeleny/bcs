@@ -2,11 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <url>http://maven.apache.org</url>
-    <groupId>com.srvs</groupId>
-    <artifactId>srvs</artifactId>
+    <groupId>org.fit.pis</groupId>
+    <artifactId>pis</artifactId>
     <packaging>jar</packaging>
-    <version>0.1</version>
-    <name>srds-prototype</name>
+    <version>1.0</version>
+    <name>Page Image Segmentation</name>
     <dependencies>
         <dependency>
             <groupId>org.fit.cssbox</groupId>
