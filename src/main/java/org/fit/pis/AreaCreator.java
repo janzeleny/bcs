@@ -14,6 +14,9 @@ import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
 
+import com.infomatiq.jsi.SpatialIndex;
+import com.infomatiq.jsi.rtree.RTree;
+
 import cz.vutbr.web.css.CSSProperty.TextDecoration;
 
 public class AreaCreator
@@ -22,10 +25,15 @@ public class AreaCreator
     private final int pageWidth;
     private final int pageHeight;
 
+    private final SpatialIndex areaTree;
+
     public AreaCreator(int w, int h)
     {
         this.pageWidth = w;
         this.pageHeight = h;
+
+        this.areaTree = new RTree();
+        this.areaTree.init(null);
     }
 
     public ArrayList<PageArea> getAreas(ElementBox root)
@@ -286,7 +294,7 @@ public class AreaCreator
         area = new PageArea(new Color(Color.HSBtoRGB(hsb[0], hsb[1], hsb[2])),
                             pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
         area.setNode(box.getNode());
-        this.areas.add(area);
+        this.addArea(area);
     }
 
 
@@ -306,7 +314,7 @@ public class AreaCreator
 
         area = new PageArea(avg.getColor(), pos.x, pos.y, pos.x+pos.width, pos.y+pos.height);
         area.setNode(((Box)box).getNode());
-        this.areas.add(area);
+        this.addArea(area);
     }
 
     private void getArea(ElementBox box, Color parentBg)
@@ -329,7 +337,7 @@ public class AreaCreator
         {
             area = new PageArea(c, l, t, r, b);
             area.setNode(box.getNode());
-            this.areas.add(area);
+            this.addArea(area);
         }
     }
 
@@ -339,5 +347,18 @@ public class AreaCreator
         if (w == 0 || h == 0) return false;
         if (x+w < 0 || y+h < 0) return false;
         return true;
+    }
+
+    private void addArea(PageArea area) {
+        AreaMatch match;
+
+        match = new AreaMatch();
+        this.areaTree.intersects(area.getRectangle(), match);
+        if (match.getIds().size() > 0) {
+            return;
+        }
+
+        this.areas.add(area);
+        this.areaTree.add(area.getRectangle(), this.areas.size()-1);
     }
 }
