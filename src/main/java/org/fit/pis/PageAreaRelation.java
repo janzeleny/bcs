@@ -134,6 +134,7 @@ public class PageAreaRelation
 
         alignment = a.getSideAlignment(b);
         if (alignment == PageArea.ALIGNMENT_NONE) return aligned;
+        aligned++;
 
         queue.add(this.a);
         queue.add(this.b);
