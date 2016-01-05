@@ -13,12 +13,15 @@ import javax.imageio.ImageIO;
 
 import org.fit.cssbox.css.CSSNorm;
 import org.fit.cssbox.css.DOMAnalyzer;
+import org.fit.cssbox.io.DOMSource;
 import org.fit.cssbox.io.DefaultDOMSource;
 import org.fit.cssbox.io.DefaultDocumentSource;
 import org.fit.cssbox.io.DocumentSource;
 import org.fit.cssbox.layout.BrowserCanvas;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import cz.vutbr.web.css.MediaSpec;
 
 public class Main
 {
@@ -28,21 +31,31 @@ public class Main
     private static DOMAnalyzer renderPage(URL url) throws Exception, IOException, SAXException
     {
         URLConnection con;
-        DocumentSource docSource;
+        DocumentSource src = new DefaultDocumentSource(url);
 
         con = url.openConnection();
         url = con.getURL(); /* Store this (possible redirect happened) */
-        docSource = new DefaultDocumentSource(url);
 
-        DefaultDOMSource parser = new DefaultDOMSource(docSource);
+        DOMSource parser = new DefaultDOMSource(src);
         parser.setContentType(con.getHeaderField("Content-Type"));
-        Document doc = parser.parse(); //doc represents the obtained DOM
+        Document doc = parser.parse();
+
+        String encoding = parser.getCharset();
+
+        MediaSpec media = new MediaSpec("screen");
 
         DOMAnalyzer da = new DOMAnalyzer(doc, url);
-        da.attributesToStyles(); //convert the HTML presentation attributes to inline styles
-        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the standard style sheet
-        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT); //use the additional style sheet
-        da.getStyleSheets(); //load the author style sheets
+        if (encoding == null)
+            encoding = da.getCharacterEncoding();
+        da.setDefaultEncoding(encoding);
+        da.setMediaSpec(media);
+        da.attributesToStyles();
+        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
+        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
+        da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT);
+        da.getStyleSheets();
+
+        src.close();
 
         return da;
     }
@@ -83,6 +96,7 @@ public class Main
         }
     }
 
+
     public static void main(String []args) throws Exception, IOException, SAXException
     {
         String urlString;
@@ -117,7 +131,12 @@ public class Main
         url = new URL(urlString);
 
         da = renderPage(url);
-        canvas = new BrowserCanvas(da.getRoot(), da, new java.awt.Dimension(1000, 600), url);
+
+        canvas = new BrowserCanvas(da.getRoot(), da, url);
+//        canvas.getConfig().setLoadImages(false);
+//        canvas.getConfig().setLoadBackgroundImages(false);
+//        canvas.getConfig().setReplaceImagesWithAlt(true);
+        canvas.createLayout(new java.awt.Dimension(1000, 600));
 
         drawImage(canvas, imageString);
 
@@ -134,6 +153,9 @@ public class Main
         groups = h.extractGroups(h.getAreas());
         ungrouped = h.getUngrouped();
 
+        /* For the sake of the right name */
+        threshold = h.getThreshold();
         drawBoxes(canvas, groups, ungrouped, imageString);
+        System.exit(0); /* Can't just return, as the AWT Thread was created */
     }
 }

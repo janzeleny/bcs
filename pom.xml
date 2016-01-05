@@ -11,7 +11,7 @@
         <dependency>
             <groupId>net.sf.cssbox</groupId>
             <artifactId>cssbox</artifactId>
-            <version>4.9</version>
+            <version>4.11-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
@@ -31,12 +31,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.7</version>
+            <version>1.7.12</version>
         </dependency>
         <dependency>
             <groupId>net.sf.cssbox</groupId>
             <artifactId>jstyleparser</artifactId>
-            <version>1.20</version>
+            <version>1.22-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.antlr</groupId>
