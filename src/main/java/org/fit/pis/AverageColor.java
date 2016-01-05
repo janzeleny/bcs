@@ -18,7 +18,7 @@ public class AverageColor
     {
         int x, y;
         int alpha;
-        int rSum = 0, gSum = 0, bSum = 0;
+        long rSum = 0, gSum = 0, bSum = 0;
         int rgb;
         int count, totalCount;
 
@@ -57,7 +57,7 @@ public class AverageColor
         gSum /= count;
         bSum /= count;
 
-        this.color = new Color(rSum, gSum, bSum, 255);
+        this.color = new Color((int)rSum, (int)gSum, (int)bSum, 255);
         this.coloredPortion = (float)count/totalCount;
     }
 
