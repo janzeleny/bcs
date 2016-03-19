@@ -1,99 +1,46 @@
 package org.fit.pis;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
-
-import org.fit.cssbox.css.CSSNorm;
-import org.fit.cssbox.css.DOMAnalyzer;
-import org.fit.cssbox.io.DOMSource;
-import org.fit.cssbox.io.DefaultDOMSource;
-import org.fit.cssbox.io.DefaultDocumentSource;
-import org.fit.cssbox.io.DocumentSource;
-import org.fit.cssbox.layout.BrowserCanvas;
-import org.w3c.dom.Document;
+import org.fit.cssbox.layout.Viewport;
+import org.fit.pis.out.ImageOutput;
+import org.fit.pis.out.TextOutput;
 import org.xml.sax.SAXException;
-
-import cz.vutbr.web.css.MediaSpec;
 
 public class Main
 {
     public static final String home = "/home/greengo/";
     public static double threshold = -1;
 
-    private static DOMAnalyzer renderPage(URL url) throws Exception, IOException, SAXException
-    {
-        URLConnection con;
-        DocumentSource src = new DefaultDocumentSource(url);
 
-        con = url.openConnection();
-        url = con.getURL(); /* Store this (possible redirect happened) */
 
-        DOMSource parser = new DefaultDOMSource(src);
-        parser.setContentType(con.getHeaderField("Content-Type"));
-        Document doc = parser.parse();
 
-        String encoding = parser.getCharset();
+    public static void process(Viewport view, AreaCreator c, String imageString, Boolean debug) throws Exception {
+        ArrayList<PageArea> areas;
+        ArrayList<PageArea> groups;
+        ArrayList<PageArea> ungrouped;
+        AreaProcessor2 h;
+        ImageOutput out;
+        TextOutput textOut;
 
-        MediaSpec media = new MediaSpec("screen");
+        areas = c.getAreas(view.getRootBox());
+        h = new AreaProcessor2(areas, view.getWidth(), view.getHeight());
+        if (threshold > 0) h.setThreshold(threshold);
+        if (debug != null) h.setDebug(debug);
 
-        DOMAnalyzer da = new DOMAnalyzer(doc, url);
-        if (encoding == null)
-            encoding = da.getCharacterEncoding();
-        da.setDefaultEncoding(encoding);
-        da.setMediaSpec(media);
-        da.attributesToStyles();
-        da.addStyleSheet(null, CSSNorm.stdStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.addStyleSheet(null, CSSNorm.userStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.addStyleSheet(null, CSSNorm.formsStyleSheet(), DOMAnalyzer.Origin.AGENT);
-        da.getStyleSheets();
+        groups = h.extractGroups(h.getAreas());
+        ungrouped = h.getUngrouped();
 
-        src.close();
+        /* For the sake of the right name */
+        threshold = h.getThreshold();
 
-        return da;
-    }
+        out = new ImageOutput(view, groups, ungrouped);
+        out.save(home+imageString+"-boxes-"+threshold+".png");
 
-    private static void drawImage(BrowserCanvas canvas, String pageName)
-    {
-        PageImage img;
-
-        img = new PageImage(canvas);
-        img.draw();
-        img.save(home+pageName+".png");
-    }
-
-    private static void drawBoxes(BrowserCanvas canvas, ArrayList<PageArea> groups, ArrayList<PageArea> ungrouped, String imageName)
-    {
-        BufferedImage boxImg;
-        Graphics2D g;
-
-        boxImg = new BufferedImage(canvas.getViewport().getWidth(), canvas.getViewport().getHeight(), BufferedImage.TYPE_INT_ARGB);
-        g = boxImg.createGraphics();
-        g.setColor(Color.white);
-        g.fillRect(0, 0, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
-        g.setColor(Color.black);
-        for (PageArea area: groups)
-        {
-            g.drawRect(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight());
-        }
-        g.setColor(Color.red);
-        for (PageArea area: ungrouped)
-        {
-            g.drawRect(area.getLeft(), area.getTop(), area.getWidth(), area.getHeight());
-        }
-
-        File outputfile = new File(home+imageName+"-boxes-"+threshold+".png");
-        try {
-            ImageIO.write(boxImg, "png", outputfile);
-        } catch (IOException e) {
-        }
+        textOut = new TextOutput(groups, ungrouped);
+        textOut.save(home+imageString+"-boxes-"+threshold+".txt");
     }
 
 
@@ -101,26 +48,21 @@ public class Main
     {
         String urlString;
         String imageString;
-        DOMAnalyzer da;
         URL url;
-        BrowserCanvas canvas;
-        ArrayList<PageArea> areas;
-        ArrayList<PageArea> groups;
-        ArrayList<PageArea> ungrouped;
-        boolean debug = false;
-        boolean debugSet = false;
+        Viewport view;
+        Boolean debug = null;
+        PageLoader pl;
+        AreaCreator c;
 
         if (args.length < 1)
         {
             System.out.println("./run.sh <address>[ <threshold>[ debug]]");
             return;
-        }
-        else if (args.length > 1)
-        {
+        } else if (args.length == 1) {
+            threshold = 0.3;
+        } else {
             threshold = new Double(args[1]);
-            if (args.length > 2)
-            {
-                debugSet = true;
+            if (args.length > 2) {
                 debug = new Boolean(args[2]);
             }
         }
@@ -130,32 +72,14 @@ public class Main
         if (imageString.length() > 128) imageString = imageString.substring(0, 128);
         url = new URL(urlString);
 
-        da = renderPage(url);
+        pl = new PageLoader(url);
+        view = pl.getViewport(new java.awt.Dimension(1000, 600));
+        pl.save(imageString+".png");
 
-        canvas = new BrowserCanvas(da.getRoot(), da, url);
-//        canvas.getConfig().setLoadImages(false);
-//        canvas.getConfig().setLoadBackgroundImages(false);
-//        canvas.getConfig().setReplaceImagesWithAlt(true);
-        canvas.createLayout(new java.awt.Dimension(1000, 600));
+        c = new AreaCreator(view.getWidth(), view.getHeight());
 
-        drawImage(canvas, imageString);
+        process(view, c, imageString, debug);
 
-        AreaProcessor2 h;
-        AreaCreator c;
-
-        c = new AreaCreator(canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
-        areas = c.getAreas(canvas.getRootBox());
-
-        h = new AreaProcessor2(areas, canvas.getViewport().getWidth(), canvas.getViewport().getHeight());
-        if (threshold > 0) h.setThreshold(threshold);
-        if (debugSet) h.setDebug(debug);
-
-        groups = h.extractGroups(h.getAreas());
-        ungrouped = h.getUngrouped();
-
-        /* For the sake of the right name */
-        threshold = h.getThreshold();
-        drawBoxes(canvas, groups, ungrouped, imageString);
         System.exit(0); /* Can't just return, as the AWT Thread was created */
     }
 }
