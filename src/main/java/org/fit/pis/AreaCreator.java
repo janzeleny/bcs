@@ -25,19 +25,18 @@ public class AreaCreator
     private final int pageWidth;
     private final int pageHeight;
 
-    private final SpatialIndex areaTree;
+    private SpatialIndex areaTree;
 
     public AreaCreator(int w, int h)
     {
         this.pageWidth = w;
         this.pageHeight = h;
-
-        this.areaTree = new RTree();
-        this.areaTree.init(null);
     }
 
     public ArrayList<PageArea> getAreas(ElementBox root)
     {
+        this.areaTree = new RTree();
+        this.areaTree.init(null);
         this.areas = new ArrayList<>();
 
         this.getAreasSubtree(root, Color.white);
