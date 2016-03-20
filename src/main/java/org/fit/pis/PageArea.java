@@ -401,7 +401,7 @@ public class PageArea
         this.meanNeighborDistance = sum/((cnt!=0)?cnt:1);
     }
 
-    public double getSimilarity(PageArea a)
+    public double getSimilarity(PageArea a, int alignmentScore)
     {
         double shape = getShapeSimilarity(a);
         double color = getColorSimilarity(a);
@@ -418,7 +418,7 @@ public class PageArea
         }
 
 //        shape = 0;
-        return (shape + color + position)/3;
+        return (shape + color + position)/(alignmentScore*3);
     }
 
     public double getSizeSimilarity(PageArea a)

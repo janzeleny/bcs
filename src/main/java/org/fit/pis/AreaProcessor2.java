@@ -1,7 +1,5 @@
 package org.fit.pis;
 
-import gnu.trove.TIntProcedure;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -15,6 +13,8 @@ import java.util.Map;
 import com.infomatiq.jsi.Rectangle;
 import com.infomatiq.jsi.SpatialIndex;
 import com.infomatiq.jsi.rtree.RTree;
+
+import gnu.trove.TIntProcedure;
 
 class AreaMatch implements TIntProcedure
 {
@@ -83,6 +83,10 @@ public class AreaProcessor2
         if (t < 0 || t > 1) return;
 
         this.similarityThreshold = t;
+    }
+
+    public double getThreshold() {
+        return this.similarityThreshold;
     }
 
     public void setDebug(boolean d)
@@ -760,9 +764,9 @@ public class AreaProcessor2
         {
             a = rel.getA();
             b = rel.getB();
-            similarity = a.getSimilarity(b);
             rel.setAlignmentScore(rel.computeAlignmentScore());
-            rel.setSimilarity(similarity/rel.getAlignmentScore());
+            similarity = a.getSimilarity(b, rel.getAlignmentScore());
+            rel.setSimilarity(similarity);
         }
 
         Collections.sort(relations, new RelationComparator());

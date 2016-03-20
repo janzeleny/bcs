@@ -152,7 +152,7 @@ public class PageAreaRelation
 
                 if (relation.getDirection() != this.direction ||
                     inspected.contains(area) || queue.contains(area) ||
-                    cur.getSideAlignment(area) != alignment) continue;
+                    cur.getSideAlignment(area) != alignment || this.absoluteDistance != relation.getAbsoluteDistance()) continue;
 
                 aligned++;
                 queue.add(area);
