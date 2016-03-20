@@ -59,7 +59,10 @@ public class AreaCreator
         if (start == end)
         {
             /* No children */
-//            this.getArea(root, parentBg);
+            if (!this.isTransparent(root))
+            {
+                this.getArea(root, parentBg);
+            }
             return;
         }
         else if (start+1 == end)
