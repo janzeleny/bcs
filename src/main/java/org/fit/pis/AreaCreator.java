@@ -5,6 +5,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 
 import org.fit.cssbox.layout.BackgroundImage;
@@ -22,6 +23,7 @@ import cz.vutbr.web.css.CSSProperty.TextDecoration;
 public class AreaCreator
 {
     private ArrayList<PageArea> areas;
+    private HashSet<Integer> mask;
     private final int pageWidth;
     private final int pageHeight;
 
@@ -35,14 +37,26 @@ public class AreaCreator
 
     public ArrayList<PageArea> getAreas(ElementBox root)
     {
+        ArrayList<PageArea> ret;
+
         this.areaTree = new RTree();
         this.areaTree.init(null);
         this.areas = new ArrayList<>();
+        this.mask = new HashSet<>();
+        ret = new ArrayList<>();
 
         this.getAreasSubtree(root, Color.white);
 
-        Collections.sort(this.areas, new AreaSizeComparator());
-        return this.areas;
+        for (int index = 0; index < this.areas.size(); index++) {
+            if (this.mask.contains(index)) {
+                continue;
+            }
+
+            ret.add(this.areas.get(index));
+        }
+
+        Collections.sort(ret, new AreaSizeComparator());
+        return ret;
     }
 
     private void getAreasSubtree(ElementBox root, Color parentBg)
@@ -356,8 +370,8 @@ public class AreaCreator
 
         match = new AreaMatch();
         this.areaTree.intersects(area.getRectangle(), match);
-        if (match.getIds().size() > 0) {
-            return;
+        for (Integer id: match.getIds()) {
+            this.mask.add(id);
         }
 
         this.areas.add(area);
