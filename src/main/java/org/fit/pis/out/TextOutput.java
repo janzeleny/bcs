@@ -10,10 +10,10 @@ import org.fit.pis.PageArea;
 public class TextOutput implements Output {
     private String text;
 
-    public TextOutput(ArrayList<PageArea> groups, ArrayList<PageArea> ungrouped) {
+    public TextOutput(ArrayList<PageArea> areas) {
         this.text = "";
 
-        for (PageArea area: groups) {
+        for (PageArea area: areas) {
             this.text += area.getLeft()+","+area.getTop()+","+area.getWidth()+","+area.getHeight()+"\n";
         }
     }

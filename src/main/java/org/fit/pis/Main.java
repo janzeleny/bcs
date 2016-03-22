@@ -39,7 +39,7 @@ public class Main
         out = new ImageOutput(view, groups, ungrouped);
         out.save(home+imageString+"-boxes-"+threshold+".png");
 
-        textOut = new TextOutput(groups, ungrouped);
+        textOut = new TextOutput(groups);
         textOut.save(home+imageString+"-boxes-"+threshold+".txt");
     }
 
@@ -74,7 +74,7 @@ public class Main
 
         pl = new PageLoader(url);
         view = pl.getViewport(new java.awt.Dimension(1000, 600));
-        pl.save(imageString+".png");
+        pl.save(home+imageString+".png");
 
         c = new AreaCreator(view.getWidth(), view.getHeight());
 
