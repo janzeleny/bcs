@@ -124,6 +124,7 @@ public class PageAreaRelation
     public int computeAlignmentScore()
     {
         int aligned = 1;
+        int threshold;
         int alignment = PageArea.ALIGNMENT_NONE;
 
         ArrayList<PageArea> queue = new ArrayList<>();
@@ -133,7 +134,14 @@ public class PageAreaRelation
         PageAreaRelation relation;
 
         alignment = a.getSideAlignment(b);
-        if (alignment == PageArea.ALIGNMENT_NONE) return aligned;
+        threshold = (int) Math.floor(Math.min(Math.min(this.a.getWidth(), this.a.getHeight()),
+                                              Math.min(this.b.getWidth(), this.b.getHeight()))*1.5);
+        if (alignment == PageArea.ALIGNMENT_NONE ||
+            this.absoluteDistance > threshold)
+        {
+            return aligned;
+        }
+
         aligned++;
 
         queue.add(this.a);
@@ -152,7 +160,11 @@ public class PageAreaRelation
 
                 if (relation.getDirection() != this.direction ||
                     inspected.contains(area) || queue.contains(area) ||
-                    cur.getSideAlignment(area) != alignment || this.absoluteDistance != relation.getAbsoluteDistance()) continue;
+                    cur.getSideAlignment(area) != alignment ||
+                    relation.getAbsoluteDistance() > threshold)
+                {
+                    continue;
+                }
 
                 aligned++;
                 queue.add(area);
