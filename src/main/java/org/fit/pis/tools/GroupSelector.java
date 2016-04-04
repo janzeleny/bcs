@@ -193,6 +193,7 @@ public class GroupSelector
     protected JScrollPane contentScroll = null;
     protected JPanel contentCanvas = null;
     protected String filePath;
+    JFileChooser fc;
 
 
     public void displayImage(File file)
@@ -428,7 +429,7 @@ public class GroupSelector
         if (exportButton == null)
         {
             exportButton = new JButton();
-            exportButton.setText("Export");
+            exportButton.setText("Save groups");
             exportButton.addActionListener(new java.awt.event.ActionListener()
             {
                 @Override
@@ -466,6 +467,7 @@ public class GroupSelector
     {
         if (openButton == null)
         {
+            fc = new JFileChooser();
             openButton = new JButton();
             openButton.setText("Open ...");
             openButton.addActionListener(new java.awt.event.ActionListener()
@@ -473,7 +475,6 @@ public class GroupSelector
                 @Override
                 public void actionPerformed(java.awt.event.ActionEvent e)
                 {
-                    JFileChooser fc = new JFileChooser();
                     //In response to a button click:
                     int returnVal = fc.showOpenDialog(mainPanel);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -498,6 +499,9 @@ public class GroupSelector
         {
             contentScroll = new JScrollPane();
             contentScroll.setViewportView(getContentCanvas());
+            contentScroll.setAutoscrolls(true);
+            contentScroll.getVerticalScrollBar().setUnitIncrement(20);
+            contentScroll.getHorizontalScrollBar().setUnitIncrement(20);
             contentScroll.addComponentListener(new java.awt.event.ComponentAdapter()
             {
                 @Override
@@ -509,6 +513,7 @@ public class GroupSelector
                     }
                 }
             });
+
         }
         return contentScroll;
     }
