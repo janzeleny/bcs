@@ -14,7 +14,7 @@ public class TextOutput implements Output {
         this.text = "";
 
         for (PageArea area: areas) {
-            this.text += area.getLeft()+","+area.getTop()+","+area.getWidth()+","+area.getHeight()+"\n";
+            this.text += area.getLeft()+","+area.getTop()+","+area.getWidth()+","+area.getHeight()+":"+area.getColor().getRGB()+"\n";
         }
     }
 

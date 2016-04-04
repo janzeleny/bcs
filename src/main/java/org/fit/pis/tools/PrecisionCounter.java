@@ -213,6 +213,7 @@ public class PrecisionCounter {
         ArrayList<Rectangle> list;
         BufferedReader reader;
         String line;
+        String[] lineArray;
         String[] coords;
         int x, y, w, h;
 
@@ -221,7 +222,8 @@ public class PrecisionCounter {
         try {
             reader = new BufferedReader(new FileReader(filename));
             while ((line = reader.readLine()) != null) {
-                coords = line.split(",");
+                lineArray = line.split(":");
+                coords = lineArray[0].split(",");
                 x = Integer.parseInt(coords[0]);
                 y = Integer.parseInt(coords[1]);
                 w = Integer.parseInt(coords[2]);
