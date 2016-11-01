@@ -575,7 +575,7 @@ public class AreaProcessor2
         densB = (double)cntB / dimB;
 
         ratio = Math.min(densA, densB)/Math.max(densA, densB);
-//        if (ratio <= (double)1/3) return true;
+//        if (ratio <= (double)2/3) return true;
         if (ratio <= 0.5) return true;
         else return false;
     }

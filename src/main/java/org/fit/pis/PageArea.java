@@ -418,7 +418,7 @@ public class PageArea
         }
 
 //        shape = 0;
-        return (shape + color + position)/(alignmentScore*3);
+        return (0.3*shape + 0.5*color + 0.2*position)/(2*alignmentScore);
     }
 
     public double getSizeSimilarity(PageArea a)
