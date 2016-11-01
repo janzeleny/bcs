@@ -26,6 +26,8 @@ public class Main
         ImageOutput out;
         TextOutput textOut;
 
+//         textOut = new TextOutput(areas);
+//         textOut.save(home+imageString+"-boxes.txt");
 
         h = new AreaProcessor2(areas, (int)view.getWidth(), (int)view.getHeight());
         if (threshold > 0) h.setThreshold(threshold);
@@ -82,7 +84,7 @@ public class Main
             r = new Rectangle(view.getWidth(), view.getHeight());
             areas = c.getAreas(view.getRootBox());
         } else {
-            imageString = urlString.substring(urlString.lastIndexOf('/'), urlString.lastIndexOf('.'));
+            imageString = urlString.substring(urlString.lastIndexOf('/'), urlString.lastIndexOf("-boxes.txt"));
 
             fl = new FileLoader(urlString);
             fl.save(home+imageString+".png");
