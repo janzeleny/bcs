@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 import com.infomatiq.jsi.Rectangle;
@@ -85,7 +84,7 @@ public class PrecisionCounter {
             }
             areas = this.parseFile(filename);
             score = this.getScore(areas);
-            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]+" ");
+            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]+" "+this.fScore(score)+" ");
             if (bcsPrec == null || score[PRECISION_POS] > bcsPrec[PRECISION_POS]) {
                 bcsPrec = score;
             }
@@ -97,7 +96,7 @@ public class PrecisionCounter {
             filename = this.filePrefix + "-vips-" + i + "-boxes.txt";
             areas = this.parseFile(filename);
             score = this.getScore(areas);
-            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]);
+            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]+" "+this.fScore(score));
             System.out.println();
             if (vipsPrec == null || score[PRECISION_POS] > vipsPrec[PRECISION_POS]) {
                 vipsPrec = score;
@@ -108,12 +107,15 @@ public class PrecisionCounter {
         }
     }
 
+    private double fScore(double [] score) {
+        return 2*(score[PRECISION_POS]*score[RECALL_POS])/(score[PRECISION_POS]+score[RECALL_POS]);
+    }
+
     private double[] getScore(ArrayList<Rectangle> areas) {
         double[] score = new double[2];
         HashSet<Rectangle> selectedBoxes;
         HashSet<Rectangle> groupBoxes;
         HashSet<Rectangle> groupsCovered;
-        HashMap<Integer, Double> groupWeights;
         RectangleMatch groupMatch;
         RectangleMatch boxMatch;
         Rectangle group;
