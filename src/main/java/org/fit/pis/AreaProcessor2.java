@@ -636,7 +636,7 @@ public class AreaProcessor2
                 {
                     bestRel = tmpRelations.get(candidate);
                     bestRel.addCardinality(rel.getCardinality());
-                    bestRel.addSimilarity(rel.getSimilarity());
+                    bestRel.addSimilarity(rel.getSimilarity()*rel.getCardinality());
                 }
                 else
                 {

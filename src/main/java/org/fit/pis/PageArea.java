@@ -412,7 +412,7 @@ public class PageArea
         {
             return 0.0;
         }
-        else if (position == 1.0)
+        else if (position > 1.0)
         {
             return 1.0;
         }
@@ -561,12 +561,12 @@ public class PageArea
         double forward, backward;
         double dist;
 
-        if (rel == null) return 1.0;
+        if (rel == null) return 1.1;
 
         if (this == a || this.overlaps(a)) return 0.0;
 
-        if (this.maxNeighborDistance == this.meanNeighborDistance ||
-            a.maxNeighborDistance == a.meanNeighborDistance) return 0.0;
+//        if (this.maxNeighborDistance == this.meanNeighborDistance ||
+//            a.maxNeighborDistance == a.meanNeighborDistance) return 0.0;
 
         dist = this.getDistanceAbsolute(a);
         forward = dist/this.maxNeighborDistance;

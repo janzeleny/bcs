@@ -135,7 +135,7 @@ public class PageAreaRelation
 
         alignment = a.getSideAlignment(b);
         threshold = (int) Math.floor(Math.min(Math.min(this.a.getWidth(), this.a.getHeight()),
-                                              Math.min(this.b.getWidth(), this.b.getHeight()))*200);
+                                              Math.min(this.b.getWidth(), this.b.getHeight()))*1.5);
         if (alignment == PageArea.ALIGNMENT_NONE ||
             this.absoluteDistance > threshold)
         {
