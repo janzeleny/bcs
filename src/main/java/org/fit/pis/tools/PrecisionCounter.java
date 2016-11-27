@@ -34,6 +34,9 @@ public class PrecisionCounter {
     private static final int PRECISION_POS = 0;
     private static final int RECALL_POS = 1;
 
+    private static final int METRIC_F = 0;
+    private static final int METRIC_ARI = 1;
+
     private ArrayList<Rectangle> groups;
     private ArrayList<Rectangle> boxes;
     private SpatialIndex groupTree;
@@ -68,43 +71,50 @@ public class PrecisionCounter {
         }
     }
 
-    public void calculate() {
+    public void calculate(int metric) {
         String filename;
         ArrayList<Rectangle> areas;
-        double[] score;
-        double[] bcsPrec = null, bcsRec = null;
-        double[] vipsPrec = null, vipsRec = null;
+        double[] fScore;
+        double score;
+        double bestBcs = 0, bestVips = 0;
 
         for (int i = 1; i <= 10; i++) {
-            System.out.print(i+" ");
+//            System.out.print(i+" ");
             if (i < 10) {
                 filename = this.filePrefix + "-boxes-0." + i + ".txt";
             } else {
                 filename = this.filePrefix + "-boxes-1.0.txt";
             }
             areas = this.parseFile(filename);
-            score = this.getScore(areas);
-            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]+" "+this.fScore(score)+" ");
-            if (bcsPrec == null || score[PRECISION_POS] > bcsPrec[PRECISION_POS]) {
-                bcsPrec = score;
+            if (metric == METRIC_F) {
+                fScore = this.getScore(areas);
+                score = this.fScore(fScore);
+//                System.out.print("BCS: "+fScore[PRECISION_POS]+" "+fScore[RECALL_POS]+" "+score+" | ");
+            } else {
+                score = this.getAriScore(areas);
+//                System.out.print("BCS: "+score+" | ");
             }
-            if (bcsRec == null || score[RECALL_POS] > bcsRec[RECALL_POS]) {
-                bcsRec = score;
+            if (score > bestBcs) {
+                bestBcs = score;
             }
 
 
             filename = this.filePrefix + "-vips-" + i + "-boxes.txt";
             areas = this.parseFile(filename);
-            score = this.getScore(areas);
-            System.out.print(score[PRECISION_POS]+" "+score[RECALL_POS]+" "+this.fScore(score));
-            System.out.println();
-            if (vipsPrec == null || score[PRECISION_POS] > vipsPrec[PRECISION_POS]) {
-                vipsPrec = score;
+            if (metric == METRIC_F) {
+                fScore = this.getScore(areas);
+                score = this.fScore(fScore);
+//                System.out.print("VIPS: "+fScore[PRECISION_POS]+" "+fScore[RECALL_POS]+" "+score);
+            } else {
+                score = this.getAriScore(areas);
+//                System.out.print("VIPS: "+score);
             }
-            if (vipsRec == null || score[RECALL_POS] > vipsRec[RECALL_POS]) {
-                vipsRec = score;
+            if (score > bestVips) {
+                bestVips = score;
             }
+//            System.out.println();
         }
+        System.out.println("BCS: "+bestBcs+" | VIPS: "+bestVips);
     }
 
     private double fScore(double [] score) {
@@ -202,6 +212,68 @@ public class PrecisionCounter {
         return score;
     }
 
+    private int getIntersectionSize(Rectangle a, Rectangle b) {
+        HashSet<Integer> boxesA, boxesB;
+        RectangleMatch aMatch, bMatch;
+
+        aMatch = new RectangleMatch();
+        this.boxTree.intersects(a, aMatch);
+        boxesA = new HashSet<>(aMatch.getIds());
+
+        bMatch = new RectangleMatch();
+        this.boxTree.intersects(b, bMatch);
+        boxesB = new HashSet<>(bMatch.getIds());
+
+        boxesA.retainAll(boxesB);
+
+        return boxesA.size();
+    }
+
+    /**
+     * Adjusted Rand Index score
+     *
+     * @param detectedAreas
+     * @see http://www.otlet-institute.org/wikics/Clustering_Problems.html#toc-Subsection-4.1
+     * @return
+     */
+    private double getAriScore(ArrayList<Rectangle> detectedAreas) {
+        int [] detectedSums = new int[detectedAreas.size()];
+        int [] selectedSums = new int[this.groups.size()];
+        int sum = 0;
+        double expected;
+        double allComb = 0, selectedComb = 0, detectedComb = 0, sumComb = 0;
+        int current;
+        Rectangle selected;
+        Rectangle detected;
+
+        for (int i = 0; i < this.groups.size(); i++) {
+            selected = this.groups.get(i);
+            for (int j = 0; j < detectedAreas.size(); j++) {
+                detected = detectedAreas.get(j);
+                current = this.getIntersectionSize(selected, detected);
+                selectedSums[i] += current;
+                detectedSums[j] += current;
+                sum += current;
+                allComb += this.pairCount(current);
+            }
+        }
+
+        for (int i = 0; i < selectedSums.length; i++) {
+            selectedComb += this.pairCount(selectedSums[i]);
+        }
+        for (int i = 0; i < detectedSums.length; i++) {
+            detectedComb += this.pairCount(detectedSums[i]);
+        }
+        sumComb = this.pairCount(sum);
+
+        expected = selectedComb*detectedComb/sumComb;
+        return (allComb-expected)/((selectedComb+detectedComb)/2-expected);
+    }
+
+    private double pairCount(int setSize) {
+        return setSize*(setSize-1)/2.0;
+    }
+
 //    private double getOverlap(Rectangle a, Rectangle b) {
 //        double diffX, diffY;
 //
@@ -241,12 +313,20 @@ public class PrecisionCounter {
     }
 
     public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Usage: ./calculate.sh <path-to-group-file>");
+        int metric;
+
+        if (args.length < 2) {
+            System.out.println("Usage: ./calculate.sh F|ARI <path-to-group-file>");
             System.exit(1);
         }
 
-        PrecisionCounter counter = new PrecisionCounter(args[0]);
-        counter.calculate();
+        if (args[0].toLowerCase().equals("ari")) {
+            metric = METRIC_ARI;
+        } else {
+            metric = METRIC_F;
+        }
+
+        PrecisionCounter counter = new PrecisionCounter(args[1]);
+        counter.calculate(metric);
     }
 }
