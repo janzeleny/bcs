@@ -11,7 +11,7 @@
         <dependency>
             <groupId>net.sf.cssbox</groupId>
             <artifactId>cssbox</artifactId>
-            <version>4.12-SNAPSHOT</version>
+            <version>4.13</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
@@ -34,11 +34,6 @@
             <version>1.7.18</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.cssbox</groupId>
-            <artifactId>jstyleparser</artifactId>
-            <version>1.23-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr-runtime</artifactId>
             <version>3.5.2</version>
@@ -56,7 +51,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.infomatiq</groupId>
+            <groupId>net.sourceforge.jsi</groupId>
             <artifactId>jsi</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -78,8 +73,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <!-- best lock down version of the plugin too -->
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin> 
             <plugin>
@@ -114,4 +109,11 @@
             </resource>
         </resources> -->
     </build>
+    <repositories>
+		<repository>
+		  <id>jsi.sourceforge.net</id>
+		  <name>sourceforge jsi repository</name>
+		  <url>http://sourceforge.net/projects/jsi/files/m2_repo</url>
+		</repository>
+    </repositories>
 </project>
