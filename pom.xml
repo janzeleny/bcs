@@ -2,11 +2,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <url>http://maven.apache.org</url>
-    <groupId>org.fit.pis</groupId>
-    <artifactId>pis</artifactId>
+    <groupId>cz.vutbr.fit</groupId>
+    <artifactId>bcs</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
-    <name>Page Image Segmentation</name>
+    <name>Block Clustering Segmentation</name>
     <dependencies>
         <dependency>
             <groupId>net.sf.cssbox</groupId>
@@ -79,7 +79,7 @@
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
