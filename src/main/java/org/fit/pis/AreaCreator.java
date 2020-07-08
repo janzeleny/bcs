@@ -14,6 +14,7 @@ import org.fit.cssbox.layout.ContentImage;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
+import org.fit.pis.cssbox.AverageColor;
 
 import com.infomatiq.jsi.SpatialIndex;
 import com.infomatiq.jsi.rtree.RTree;

@@ -10,8 +10,8 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-import org.fit.pis.Output;
 import org.fit.pis.PageArea;
+import org.fit.pis.cssbox.Output;
 
 
 public class ImageOutput implements Output {

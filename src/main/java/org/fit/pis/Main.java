@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.fit.cssbox.layout.Viewport;
+import org.fit.pis.cssbox.PageLoader;
 import org.fit.pis.in.FileLoader;
 import org.fit.pis.out.ImageOutput;
 import org.fit.pis.out.TextOutput;
