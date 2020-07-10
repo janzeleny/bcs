@@ -207,7 +207,7 @@ public class AreaCreator
             {
                 imgColor = new AverageColor(bgImg);
             }
-            if (imgColor.getColor() == null) return null;
+            if (imgColor.getColor() == null) return color; //an empty image?
             /* DOC: mixing color of bg image with bg
              * - more precise -> if the bg is small compared to the box, it won't be so visual distinct
              * - also consider not mixing (original functionality)
