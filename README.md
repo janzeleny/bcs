@@ -3,10 +3,39 @@ BCS - Block Clustering Segmentation
 
 (c) Jan Zelený 2017
 
-This is a reference implementation of the BLock Clustering Segmentation algorithm for web page segmentation.
+This is a reference implementation of the Block Clustering Segmentation algorithm for web page segmentation. It renders a given web page and discovers a list of visual segments using the BCS algorithm (see the paper below).
 
-It uses the experimental [CSSBox rendering engine](https://github.com/radkovo/CSSBox) for rendering the web pages. Please note that CSSBox only supports a limited set of CSS3 and no JavaScript. Therefore, some modern real-world
-web pages may not be rendered correctly.
+Installation
+------------
+
+The entire package can be built using maven. Just run 
+
+```
+mvn package
+```
+
+in the project root. This will create the target package in `target/` and install the necessary dependencies to `lib/`. 
+
+Usage
+-----
+
+For starting the segmentation run
+
+```
+./run.sh <page_url> [<threshold>]
+```
+
+in the project root, where the threshold is the Clustering Threshold (CT) (0..1) which defaults to 0.3 when not specified. The tool renders the specified page and runs the segmentation. When completed correctly, three files are produced:
+
+- *page_url*.png -- a preview of the page contents after being converted to color boxes (the used segmentation input)
+- *page_url*-boxes-*threshold*.png -- the graphical segmentation result that shows the boundaries of the detected visual areas
+- *page_url*-boxes-*threshold*.txt -- the textual segmentation result that contains the boundaries of the detected visual areas. For each area, it contains its *x* and *y* coordinates, *width*, *height* and average RGB color.
+
+Please note that this implementation uses the experimental [CSSBox rendering engine](https://github.com/radkovo/CSSBox) for rendering the web pages (not a real web browser). CSSBox only supports a limited set of CSS3 and no JavaScript and therefore, it may fail on some modern real-world web pages.
+
+
+Publication
+-----------
 
 When using BCS for your scientific work, please cite the following paper:
 
