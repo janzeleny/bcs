@@ -14,10 +14,8 @@ import org.xml.sax.SAXException;
 
 public class Main
 {
-    public static final String home = "/home/greengo/";
+    public static final String home = "./";
     public static double threshold = -1;
-
-
 
 
     public static void process(Rectangle view, ArrayList<PageArea> areas, String imageString, Boolean debug) throws Exception {

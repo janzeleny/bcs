@@ -162,7 +162,7 @@ public class AreaProcessor2
         ArrayList<PageArea> ret = new ArrayList<>();
         FileWriter fstream;
 
-        if (DEBUG) fstream = new FileWriter("/home/greengo/out.txt");
+        if (DEBUG) fstream = new FileWriter("out.txt");
         else fstream = new FileWriter("/dev/null");
         this.log = new BufferedWriter(fstream);
 
