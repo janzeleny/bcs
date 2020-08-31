@@ -14,6 +14,7 @@ import org.fit.cssbox.layout.ContentImage;
 import org.fit.cssbox.layout.ElementBox;
 import org.fit.cssbox.layout.ReplacedBox;
 import org.fit.cssbox.layout.TextBox;
+import org.fit.pis.cssbox.AverageColor;
 
 import com.infomatiq.jsi.SpatialIndex;
 import com.infomatiq.jsi.rtree.RTree;
@@ -206,7 +207,7 @@ public class AreaCreator
             {
                 imgColor = new AverageColor(bgImg);
             }
-            if (imgColor.getColor() == null) return null;
+            if (imgColor.getColor() == null) return color; //an empty image?
             /* DOC: mixing color of bg image with bg
              * - more precise -> if the bg is small compared to the box, it won't be so visual distinct
              * - also consider not mixing (original functionality)

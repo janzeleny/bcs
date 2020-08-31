@@ -4,8 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.fit.pis.Output;
 import org.fit.pis.PageArea;
+import org.fit.pis.cssbox.Output;
 
 public class TextOutput implements Output {
     private String text;

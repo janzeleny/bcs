@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import org.fit.cssbox.layout.Viewport;
+import org.fit.pis.cssbox.PageLoader;
 import org.fit.pis.in.FileLoader;
 import org.fit.pis.out.ImageOutput;
 import org.fit.pis.out.TextOutput;
@@ -13,10 +14,8 @@ import org.xml.sax.SAXException;
 
 public class Main
 {
-    public static final String home = "/home/greengo/";
+    public static final String home = "./";
     public static double threshold = -1;
-
-
 
 
     public static void process(Rectangle view, ArrayList<PageArea> areas, String imageString, Boolean debug) throws Exception {

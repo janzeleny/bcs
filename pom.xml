@@ -2,16 +2,16 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <url>http://maven.apache.org</url>
-    <groupId>org.fit.pis</groupId>
-    <artifactId>pis</artifactId>
+    <groupId>cz.vutbr.fit</groupId>
+    <artifactId>bcs</artifactId>
     <packaging>jar</packaging>
     <version>1.0</version>
-    <name>Page Image Segmentation</name>
+    <name>Block Clustering Segmentation</name>
     <dependencies>
         <dependency>
             <groupId>net.sf.cssbox</groupId>
             <artifactId>cssbox</artifactId>
-            <version>4.12-SNAPSHOT</version>
+            <version>4.13</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge.nekohtml</groupId>
@@ -34,11 +34,6 @@
             <version>1.7.18</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.cssbox</groupId>
-            <artifactId>jstyleparser</artifactId>
-            <version>1.23-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr-runtime</artifactId>
             <version>3.5.2</version>
@@ -56,7 +51,7 @@
         </dependency>
 
         <dependency>
-            <groupId>com.infomatiq</groupId>
+            <groupId>net.sourceforge.jsi</groupId>
             <artifactId>jsi</artifactId>
             <version>1.0.0</version>
         </dependency>
@@ -64,11 +59,6 @@
             <groupId>net.sf.trove4j</groupId>
             <artifactId>trove4j</artifactId>
             <version>2.0.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.fit.pis</groupId>
-            <artifactId>cssbox-abstraction</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <build>
@@ -78,8 +68,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <!-- best lock down version of the plugin too -->
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin> 
             <plugin>
@@ -89,7 +79,7 @@
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
-                        <phase>install</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
@@ -114,4 +104,11 @@
             </resource>
         </resources> -->
     </build>
+    <repositories>
+		<repository>
+		  <id>jsi.sourceforge.net</id>
+		  <name>sourceforge jsi repository</name>
+		  <url>http://sourceforge.net/projects/jsi/files/m2_repo</url>
+		</repository>
+    </repositories>
 </project>
